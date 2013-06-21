@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ******************************************************************************************************************* -->
+<!-- * Date  : 04/07/2012                                                                                              * -->
+<!-- * Author: Juan Cabello                                                                                            * -->
+<!-- * Description: Ant XML file to configure RTI project with the proper configuration files of other projects (deps) * -->
+<!-- ******************************************************************************************************************* -->
+
+<project name="RTISch" default="RTD_UPM_PROD" >
+	
+	<target name="RTI-DELETE-CONFIG">
+	
+		<echo message="BUILDING::     RTI-DELETE-CONFIG >> BEGIN...."></echo>
+		<echo message="                                 >> DELETE:: /config/*.*"/>
+		<delete dir="./config/" includes="*.*"/>
+		<echo message="BUILDING::     RTI-DELETE-CONFIG >> END."></echo>
+	
+	</target>
+	
+	<target name="COPY-RTCore-CONFIG">
+	
+		<echo message="BUILDING:: COPY-RTCore-CONFIG >> BEGIN...."></echo>
+		<echo message="                              >> COPY:: /RTCore/config/logging.properties"/>
+		<echo message="                              >> COPY::/RTCore/config/rti_config.properties"/>
+	
+		<copy todir="./config/" flatten="true">
+			<resources> 
+				<file file="../RTCore/config/logging.properties"/>
+				<file file="../RTCore/config/rti_config.properties"/>
+			</resources>
+		</copy> 
+	
+		<echo message="BUILDING:: COPY-RTCore-CONFIG >> END."></echo>	
+		
+	</target>
+	
+	<target name="RTD_UPM_PROD" depends="RTI-DELETE-CONFIG, COPY-RTCore-CONFIG">
+			
+			<echo message="BUILDING:: RTD_UPM >> BEGIN...."></echo>
+		
+			<echo message="                   >> COPY-CUSTOM:: /RTD_UPM/config/rt_config.properties"/>
+		
+			<copy file="../RTD_UPM/config/prod_rt_config.properties" tofile="./config/rt_config.properties" overwrite="true" />
+			
+			<echo message="BUILDING:: RTD_UPM >> END."></echo>
+	</target>	
+	
+	
+	
+	
+</project>  

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:gloria.rt.entity.scheduler="http://gloria.eu/rt/entity/scheduler" elementFormDefault="qualified" targetNamespace="http://gloria.eu/rt/entity/scheduler">
+
+	<complexType name="dateIterval">
+		<sequence>
+			<element maxOccurs="1" minOccurs="0" name="min" type="date"/>
+			<element maxOccurs="1" minOccurs="0" name="max" type="date"/>
+		</sequence>
+	</complexType>
+
+	<simpleType name="planOfferState">
+		<restriction base="string">
+			<enumeration value="OK"/>
+			<enumeration value="REJECTED"/>
+		</restriction>
+	</simpleType>
+
+	<complexType name="planOfferInfo">
+		<sequence>
+			<element name="uuid" type="string"/>
+			<element name="state" type="gloria.rt.entity.scheduler:planOfferInfo"/>
+		</sequence>
+	</complexType>
+
+	<simpleType name="planCancelationState">
+		<restriction base="string">
+			<enumeration value="OK"/>
+			<enumeration value="INVALID_UUID"/>
+			<enumeration value="TOO_LATE"/>
+		</restriction>
+	</simpleType>
+
+	<complexType name="planCancelationInfo">
+		<sequence>
+			<element name="uuid" type="string"/>
+			<element name="state" type="gloria.rt.entity.scheduler:planCancelationState"/>
+		</sequence>
+	</complexType>
+
+	<simpleType name="planState">
+		<restriction base="string">
+			<enumeration value="QUEUED"/>
+			<enumeration value="RUNNING"/>
+			<enumeration value="DONE"/>
+			<enumeration value="CANCEL"/>
+			<enumeration value="ERROR"/>
+		</restriction>
+	</simpleType>
+
+	<simpleType name="planStateDetail">
+		<restriction base="string">
+			<enumeration value="NONE"/>
+			<enumeration value="WRONG_BEHAVIOUR"/>
+			<enumeration value="OUT_OF_TIME"/>
+			<enumeration value="BY_ADMINISTRATOR"/>
+			<enumeration value="BY_GLORIA"/>
+			<enumeration value="BY_RTS"/>
+		</restriction>
+	</simpleType>
+
+	<complexType name="planStateInfo">
+		<sequence>
+			<element maxOccurs="1" minOccurs="1" name="state" type="gloria.rt.entity.scheduler:planState"/>
+			<element maxOccurs="1" minOccurs="1" name="stateDetail" type="gloria.rt.entity.scheduler:planStateDetail"/>
+			<element maxOccurs="1" minOccurs="0" name="errorCode" type="integer"/>
+			<element maxOccurs="1" minOccurs="0" name="errorDesc" type="string"/>
+		</sequence>
+	</complexType>
+
+	<complexType name="planInfo">
+		<sequence>
+			<element maxOccurs="1" minOccurs="1" name="uuid" type="string"/>
+			<element maxOccurs="1" minOccurs="1" name="stateInfo" type="gloria.rt.entity.scheduler:planStateInfo"/>
+			<element maxOccurs="1" minOccurs="0" name="queuedDate" type="dateTime"/>
+			<element maxOccurs="1" minOccurs="0" name="execbeginDate" type="dateTime"/>
+			<element maxOccurs="1" minOccurs="0" name="execEndDate" type="dateTime"/>
+		</sequence>
+	</complexType>
+
+	<complexType name="planSearchFilter">
+		<sequence>
+			<element maxOccurs="1" minOccurs="0" name="execPredictedDateInteval" type="gloria.rt.entity.scheduler:dateIterval"/>
+			<element maxOccurs="1" minOccurs="0" name="execBeginDateInteval" type="gloria.rt.entity.scheduler:dateIterval"/>
+			<element maxOccurs="1" minOccurs="0" name="execEndDateInteval" type="gloria.rt.entity.scheduler:dateIterval"/>
+			<element maxOccurs="1" minOccurs="0" name="queuedDateInteval" type="gloria.rt.entity.scheduler:dateIterval"/>
+
+			<element maxOccurs="unbounded" minOccurs="0" name="states" type="gloria.rt.entity.scheduler:planState"/>
+			<element maxOccurs="unbounded" minOccurs="0" name="stateDetails" type="gloria.rt.entity.scheduler:planStateDetail"/>
+
+		</sequence>
+	</complexType>
+
+
+</schema>

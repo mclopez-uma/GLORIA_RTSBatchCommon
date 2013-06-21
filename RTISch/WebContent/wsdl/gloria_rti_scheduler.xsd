@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:gloria.rt.entity.scheduler="http://gloria.eu/rt/entity/scheduler" elementFormDefault="qualified" targetNamespace="http://gloria.eu/rt/entity/scheduler">
+    
+    <simpleType name="planState">
+    	<restriction base="string">
+    		<enumeration value="NONE"/>
+    	    <enumeration value="QUEUED"/>
+    		<enumeration value="ABORTED"/>
+    		<enumeration value="RUNNING"/>
+    		<enumeration value="DONE"/>
+    		<enumeration value="OUT_OF_TIME"/>
+    		<enumeration value="EXCEEDED_TIME"/>
+    		<enumeration value="ERROR"/>
+    	</restriction>
+    </simpleType>
+    
+    <complexType name="templatePlan">
+        <sequence>
+        	<element name="id" type="string"/>
+    		<element name="user" type="string"/>
+    		<element name="creationDate" type="date"/>
+    		<element name="xml" type="string"/>
+    		<element name="description" type="string"/>
+    	</sequence>
+    </complexType>
+    
+    <complexType name="plan">
+        <sequence>
+        	<element name="id" type="string"/>
+        	<element name="user" type="string"/>
+        	<element name="templateId" type="string"/>
+        	<element name="state" type="gloria.rt.entity.scheduler:planState"/>
+        	<element name="creationDate" type="date"/>
+    		<element name="errorDevId" type="string"/>
+    		<element name="errorCode" type="integer"/>
+    		<element name="errorDesc" type="string"/>
+    		<element name="execWindowStart" type="date"/>
+    		<element name="execWindowEnd" type="date"/>
+    		<element name="execMaxTime" type="long"/>
+    		<element name="rtStart" type="date"/>
+    		<element name="rtSEnd" type="date"/>
+    	</sequence>
+    </complexType>
+    
+    
+</schema>

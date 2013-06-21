@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- *************************************** -->
+<!-- * Project: GLORIA                     * -->
+<!-- * Archive: gloria_rt_scheduler.wsdl   * -->
+<!-- * Author: Juan Cabello                * -->
+<!-- * Revised by:                         * -->
+<!-- * - Martin Jelinek                    * -->
+<!-- * - Ronan Cunniffe                    * -->
+<!-- * - Petr Kubanek                      * -->
+<!-- * - Oscar Lara                        * -->
+<!-- * - Fernando Serena                   * -->
+<!-- * Date : 06/02/2013                   * -->
+<!-- *************************************** -->
+<wsdl:definitions xmlns:gloria.rt.entity.scheduler="http://gloria.eu/rt/entity/scheduler" xmlns:rti_scheduler="http://gloria.eu/rti_scheduler" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="gloria_rti_scheduler" targetNamespace="http://gloria.eu/rti_scheduler">
+	<wsdl:types>
+		<xsd:schema targetNamespace="http://gloria.eu/rti_scheduler">
+
+			<xsd:import namespace="http://gloria.eu/rt/entity/scheduler" schemaLocation="gloria_rti_scheduler_entities.xsd"/>
+
+			<!-- BASIC TYPE RESPONSES - BEGIN -->
+
+			<xsd:element name="voidResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="stringResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="out" type="xsd:string"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="booleanResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="out" type="xsd:boolean"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="intResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="out" type="xsd:int"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="longResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="out" type="xsd:long"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="doubleResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="out" type="xsd:double"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- BASIC TYPE RESPONSES - END -->
+
+			<!-- ERROR - ELEMENTS - BEGIN -->
+
+			<xsd:simpleType name="errorType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="Unsupported"/>
+					<xsd:enumeration value="General"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+
+			<xsd:element name="errorDetail">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="type" type="rti_scheduler:errorType"/>
+						<xsd:element name="code" type="xsd:integer"/>
+						<xsd:element name="desc" type="xsd:string"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- ERROR - ELEMENTS - BEGIN -->
+
+			<!-- SCHEDULE PROTOCOL - ELEMENTS - BEGIN -->
+
+			<xsd:element name="planAdvertise">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="0" name="deadline" type="xsd:date"/>
+						<xsd:element maxOccurs="unbounded" minOccurs="1" name="planList" type="xsd:string"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="planAdvertiseResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="0" name="out" type="xsd:string"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="planOffer">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="1" name="planList" type="xsd:string"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="planOfferResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="1" name="out" type="gloria.rt.entity.scheduler:planOfferInfo"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="planCancel">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="1" name="planUuidList" type="xsd:string"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="planCancelResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="1" name="out" type="gloria.rt.entity.scheduler:planCancelationInfo"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- SCHEDULE PROTOCOL - ELEMENTS - END -->
+
+			<!-- SCHEDULE ADMINISTRATION - ELEMENTS - BEGIN -->
+
+			<xsd:element name="planSearchByFilter">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="1" minOccurs="1" name="filter" type="gloria.rt.entity.scheduler:planSearchFilter"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="planSearchByFilterResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="0" name="out" type="gloria.rt.entity.scheduler:planInfo"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="planSearchByUuid">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="1" name="planUuidList" type="xsd:string"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="planSearchByUuidResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="0" name="out" type="gloria.rt.entity.scheduler:planInfo"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+			<!-- SCHEDULE ADMINISTRATION - ELEMENTS - END -->
+
+		</xsd:schema>
+	</wsdl:types>
+
+	<!-- ERROR MESSAGES - BEGIN -->
+	<wsdl:message name="rtiSchError">
+		<wsdl:part element="rti_scheduler:errorDetail" name="rtiError">
+		</wsdl:part>
+	</wsdl:message>
+	<!-- ERROR MESSAGES - END -->
+
+	<!-- SCHEDULE PROTOCOL - MESSAGES - BEGIN -->
+	<wsdl:message name="planAdvertiseRequest">
+		<wsdl:part element="rti_scheduler:planAdvertise" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="planAdvertiseResponse">
+		<wsdl:part element="rti_scheduler:planAdvertiseResponse" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+
+	<wsdl:message name="planOfferRequest">
+		<wsdl:part element="rti_scheduler:planOffer" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="planOfferResponse">
+		<wsdl:part element="rti_scheduler:planOfferResponse" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+
+	<wsdl:message name="planCancelRequest">
+		<wsdl:part element="rti_scheduler:planCancel" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="planCancelResponse">
+		<wsdl:part element="rti_scheduler:planCancelResponse" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+
+	<!-- SCHEDULE PROTOCOL - MESSAGES - END -->
+
+	<!-- SCHEDULE ADMINISTRATION - MESSAGES - BEGIN -->
+	<wsdl:message name="planSearchByFilterRequest">
+		<wsdl:part element="rti_scheduler:planSearchByFilter" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="planSearchByFilterResponse">
+		<wsdl:part element="rti_scheduler:planSearchByFilterResponse" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+
+	<wsdl:message name="planSearchByUuidRequest">
+		<wsdl:part element="rti_scheduler:planSearchByUuid" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="planSearchByUuidResponse">
+		<wsdl:part element="rti_scheduler:planSearchByUuidResponse" name="parameters">
+		</wsdl:part>
+	</wsdl:message>
+	<!-- SCHEDULE ADMINISTRATION - MESSAGES - END -->
+
+	<wsdl:portType name="gloria_rti_scheduler">
+
+		<!-- SCHEDULE PROTOCOL - PORT TYPE OPS - BEGIN -->
+
+		<wsdl:operation name="planAdvertise">
+			<wsdl:documentation>
+				Scheduler determines the plans that can be
+				executed.
+				@param planList Plan list.
+				@return Confirmed plans list
+				@throws RtiSchError In error case.
+			</wsdl:documentation>
+			<wsdl:input message="rti_scheduler:planAdvertiseRequest">
+			</wsdl:input>
+			<wsdl:output message="rti_scheduler:planAdvertiseResponse">
+			</wsdl:output>
+			<wsdl:fault message="rti_scheduler:rtiSchError" name="error"/>
+		</wsdl:operation>
+
+		<wsdl:operation name="planOffer">
+			<wsdl:documentation>
+				Assigns the observing plans to be execute in the
+				RTS.
+				@param planList Plan list.
+				@return List of pair: [plan-uuid,
+				CancelationState]. OfferState = [OK, Invalid]
+				@throws RtiSchError In
+				error case.
+			</wsdl:documentation>
+			<wsdl:input message="rti_scheduler:planOfferRequest">
+			</wsdl:input>
+			<wsdl:output message="rti_scheduler:planOfferResponse">
+			</wsdl:output>
+			<wsdl:fault message="rti_scheduler:rtiSchError" name="error"/>
+		</wsdl:operation>
+
+		<wsdl:operation name="planCancel">
+			<wsdl:documentation>
+				Cancel an offered plan list.
+				@param planUuidList
+				uuid list to cancel.
+				@return List of pair: [plan-uuid,
+				CancelationState]. CancelationState = [OK, INVALID_UUID, TOO_LATE]
+				@throws RtiSchError In error case.
+			</wsdl:documentation>
+			<wsdl:input message="rti_scheduler:planCancelRequest">
+			</wsdl:input>
+			<wsdl:output message="rti_scheduler:planCancelResponse">
+			</wsdl:output>
+			<wsdl:fault message="rti_scheduler:rtiSchError" name="error"/>
+		</wsdl:operation>
+
+		<!-- SCHEDULE PROTOCOL - PORT TYPE OPS - END -->
+
+		<!-- SCHEDULE ADMINISTRATION - PORT TYPE OPS - BEGIN -->
+		<wsdl:operation name="planSearchByFilter">
+			<wsdl:documentation>
+				Cancel an offered plan list.
+				@param filter Search
+				filter.
+				@return Information about the found observing plans.
+				@throws
+				RtiSchError In error case.
+			</wsdl:documentation>
+			<wsdl:input message="rti_scheduler:planSearchByFilterRequest">
+			</wsdl:input>
+			<wsdl:output message="rti_scheduler:planSearchByFilterResponse">
+			</wsdl:output>
+			<wsdl:fault message="rti_scheduler:rtiSchError" name="error"/>
+		</wsdl:operation>
+
+		<wsdl:operation name="planSearchByUuid">
+			<wsdl:documentation>
+				Search observing plans by uuid.
+				@param
+				planUuidList uuid list.
+				@return Information about the observing
+				plans.
+				@throws RtiSchError In error case.
+			</wsdl:documentation>
+			<wsdl:input message="rti_scheduler:planSearchByUuidRequest">
+			</wsdl:input>
+			<wsdl:output message="rti_scheduler:planSearchByUuidResponse">
+			</wsdl:output>
+			<wsdl:fault message="rti_scheduler:rtiSchError" name="error"/>
+		</wsdl:operation>
+		<!-- SCHEDULE ADMINISTRATION - PORT TYPE OPS - END -->
+
+
+	</wsdl:portType>
+
+
+	<wsdl:binding name="gloria_rti_schedulerSOAP" type="rti_scheduler:gloria_rti_scheduler">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+		<wsdl:operation name="planAdvertise">
+			<soap:operation soapAction="http://gloria.eu/rti_scheduler/planAdvertise"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="planOffer">
+			<soap:operation soapAction="http://gloria.eu/rti_scheduler/planOffer"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="planCancel">
+			<soap:operation soapAction="http://gloria.eu/rti_scheduler/planCancel"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="planSearchByFilter">
+			<soap:operation soapAction="http://gloria.eu/rti_scheduler/planSearchByFilter"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+
+		<wsdl:operation name="planSearchByUuid">
+			<soap:operation soapAction="http://gloria.eu/rti_scheduler/planSearchByUuid"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+
+	</wsdl:binding>
+
+	<wsdl:service name="gloria_rti_scheduler">
+		<wsdl:documentation/>
+		<wsdl:port binding="rti_scheduler:gloria_rti_schedulerSOAP" name="gloria_rti_schedulerSOAP">
+			<soap:address location="http://localhost:8080/RTI_SCH/services/gloria_rti_schedulerSOAP"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
