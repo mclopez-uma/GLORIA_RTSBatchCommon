@@ -30,6 +30,46 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link DateInterval }
+     * 
+     */
+    public DateInterval createDateInterval() {
+        return new DateInterval();
+    }
+
+    /**
+     * Create an instance of {@link PlanSearchFilterResult }
+     * 
+     */
+    public PlanSearchFilterResult createPlanSearchFilterResult() {
+        return new PlanSearchFilterResult();
+    }
+
+    /**
+     * Create an instance of {@link PlanCancelationInfo }
+     * 
+     */
+    public PlanCancelationInfo createPlanCancelationInfo() {
+        return new PlanCancelationInfo();
+    }
+
+    /**
+     * Create an instance of {@link PlanSearchPagination }
+     * 
+     */
+    public PlanSearchPagination createPlanSearchPagination() {
+        return new PlanSearchPagination();
+    }
+
+    /**
+     * Create an instance of {@link PlanSearchPaginationInfo }
+     * 
+     */
+    public PlanSearchPaginationInfo createPlanSearchPaginationInfo() {
+        return new PlanSearchPaginationInfo();
+    }
+
+    /**
      * Create an instance of {@link PlanInfo }
      * 
      */
@@ -54,27 +94,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link DateIterval }
-     * 
-     */
-    public DateIterval createDateIterval() {
-        return new DateIterval();
-    }
-
-    /**
      * Create an instance of {@link PlanStateInfo }
      * 
      */
     public PlanStateInfo createPlanStateInfo() {
         return new PlanStateInfo();
-    }
-
-    /**
-     * Create an instance of {@link PlanCancelationInfo }
-     * 
-     */
-    public PlanCancelationInfo createPlanCancelationInfo() {
-        return new PlanCancelationInfo();
     }
 
 }

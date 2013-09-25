@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="uuid" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="state" type="{http://gloria.eu/rt/entity/scheduler}planOfferInfo"/>
+ *         &lt;element name="state" type="{http://gloria.eu/rt/entity/scheduler}planOfferState"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -37,7 +37,7 @@ public class PlanOfferInfo {
     @XmlElement(required = true)
     protected String uuid;
     @XmlElement(required = true)
-    protected PlanOfferInfo state;
+    protected PlanOfferState state;
 
     /**
      * Obtiene el valor de la propiedad uuid.
@@ -68,10 +68,10 @@ public class PlanOfferInfo {
      * 
      * @return
      *     possible object is
-     *     {@link PlanOfferInfo }
+     *     {@link PlanOfferState }
      *     
      */
-    public PlanOfferInfo getState() {
+    public PlanOfferState getState() {
         return state;
     }
 
@@ -80,10 +80,10 @@ public class PlanOfferInfo {
      * 
      * @param value
      *     allowed object is
-     *     {@link PlanOfferInfo }
+     *     {@link PlanOfferState }
      *     
      */
-    public void setState(PlanOfferInfo value) {
+    public void setState(PlanOfferState value) {
         this.state = value;
     }
 

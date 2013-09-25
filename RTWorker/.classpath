@@ -11,6 +11,8 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/RTPersistence"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/RTWorkerAdvertisementManager"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/RTWorkerOffshoreGEN"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/RTWorkerOffshore"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/RTCore"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/RTTools"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 
 /**
@@ -18,12 +20,13 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="execPredictedDateInteval" type="{http://gloria.eu/rt/entity/scheduler}dateIterval" minOccurs="0"/>
- *         &lt;element name="execBeginDateInteval" type="{http://gloria.eu/rt/entity/scheduler}dateIterval" minOccurs="0"/>
- *         &lt;element name="execEndDateInteval" type="{http://gloria.eu/rt/entity/scheduler}dateIterval" minOccurs="0"/>
- *         &lt;element name="queuedDateInteval" type="{http://gloria.eu/rt/entity/scheduler}dateIterval" minOccurs="0"/>
+ *         &lt;element name="user" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="execPredictedDateInteval" type="{http://gloria.eu/rt/entity/scheduler}dateInterval" minOccurs="0"/>
+ *         &lt;element name="execBeginDateInteval" type="{http://gloria.eu/rt/entity/scheduler}dateInterval" minOccurs="0"/>
+ *         &lt;element name="execEndDateInteval" type="{http://gloria.eu/rt/entity/scheduler}dateInterval" minOccurs="0"/>
+ *         &lt;element name="observationSession" type="{http://www.w3.org/2001/XMLSchema}dateTime" minOccurs="0"/>
  *         &lt;element name="states" type="{http://gloria.eu/rt/entity/scheduler}planState" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="stateDetails" type="{http://gloria.eu/rt/entity/scheduler}planStateDetail" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="types" type="{http://gloria.eu/rt/entity/scheduler}planType" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -34,31 +37,58 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "planSearchFilter", propOrder = {
+    "user",
     "execPredictedDateInteval",
     "execBeginDateInteval",
     "execEndDateInteval",
-    "queuedDateInteval",
+    "observationSession",
     "states",
-    "stateDetails"
+    "types"
 })
 public class PlanSearchFilter {
 
-    protected DateIterval execPredictedDateInteval;
-    protected DateIterval execBeginDateInteval;
-    protected DateIterval execEndDateInteval;
-    protected DateIterval queuedDateInteval;
+    protected String user;
+    protected DateInterval execPredictedDateInteval;
+    protected DateInterval execBeginDateInteval;
+    protected DateInterval execEndDateInteval;
+    @XmlSchemaType(name = "dateTime")
+    protected XMLGregorianCalendar observationSession;
     protected List<PlanState> states;
-    protected List<PlanStateDetail> stateDetails;
+    protected List<PlanType> types;
+
+    /**
+     * Obtiene el valor de la propiedad user.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getUser() {
+        return user;
+    }
+
+    /**
+     * Define el valor de la propiedad user.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setUser(String value) {
+        this.user = value;
+    }
 
     /**
      * Obtiene el valor de la propiedad execPredictedDateInteval.
      * 
      * @return
      *     possible object is
-     *     {@link DateIterval }
+     *     {@link DateInterval }
      *     
      */
-    public DateIterval getExecPredictedDateInteval() {
+    public DateInterval getExecPredictedDateInteval() {
         return execPredictedDateInteval;
     }
 
@@ -67,10 +97,10 @@ public class PlanSearchFilter {
      * 
      * @param value
      *     allowed object is
-     *     {@link DateIterval }
+     *     {@link DateInterval }
      *     
      */
-    public void setExecPredictedDateInteval(DateIterval value) {
+    public void setExecPredictedDateInteval(DateInterval value) {
         this.execPredictedDateInteval = value;
     }
 
@@ -79,10 +109,10 @@ public class PlanSearchFilter {
      * 
      * @return
      *     possible object is
-     *     {@link DateIterval }
+     *     {@link DateInterval }
      *     
      */
-    public DateIterval getExecBeginDateInteval() {
+    public DateInterval getExecBeginDateInteval() {
         return execBeginDateInteval;
     }
 
@@ -91,10 +121,10 @@ public class PlanSearchFilter {
      * 
      * @param value
      *     allowed object is
-     *     {@link DateIterval }
+     *     {@link DateInterval }
      *     
      */
-    public void setExecBeginDateInteval(DateIterval value) {
+    public void setExecBeginDateInteval(DateInterval value) {
         this.execBeginDateInteval = value;
     }
 
@@ -103,10 +133,10 @@ public class PlanSearchFilter {
      * 
      * @return
      *     possible object is
-     *     {@link DateIterval }
+     *     {@link DateInterval }
      *     
      */
-    public DateIterval getExecEndDateInteval() {
+    public DateInterval getExecEndDateInteval() {
         return execEndDateInteval;
     }
 
@@ -115,35 +145,35 @@ public class PlanSearchFilter {
      * 
      * @param value
      *     allowed object is
-     *     {@link DateIterval }
+     *     {@link DateInterval }
      *     
      */
-    public void setExecEndDateInteval(DateIterval value) {
+    public void setExecEndDateInteval(DateInterval value) {
         this.execEndDateInteval = value;
     }
 
     /**
-     * Obtiene el valor de la propiedad queuedDateInteval.
+     * Obtiene el valor de la propiedad observationSession.
      * 
      * @return
      *     possible object is
-     *     {@link DateIterval }
+     *     {@link XMLGregorianCalendar }
      *     
      */
-    public DateIterval getQueuedDateInteval() {
-        return queuedDateInteval;
+    public XMLGregorianCalendar getObservationSession() {
+        return observationSession;
     }
 
     /**
-     * Define el valor de la propiedad queuedDateInteval.
+     * Define el valor de la propiedad observationSession.
      * 
      * @param value
      *     allowed object is
-     *     {@link DateIterval }
+     *     {@link XMLGregorianCalendar }
      *     
      */
-    public void setQueuedDateInteval(DateIterval value) {
-        this.queuedDateInteval = value;
+    public void setObservationSession(XMLGregorianCalendar value) {
+        this.observationSession = value;
     }
 
     /**
@@ -176,32 +206,32 @@ public class PlanSearchFilter {
     }
 
     /**
-     * Gets the value of the stateDetails property.
+     * Gets the value of the types property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the stateDetails property.
+     * This is why there is not a <CODE>set</CODE> method for the types property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getStateDetails().add(newItem);
+     *    getTypes().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link PlanStateDetail }
+     * {@link PlanType }
      * 
      * 
      */
-    public List<PlanStateDetail> getStateDetails() {
-        if (stateDetails == null) {
-            stateDetails = new ArrayList<PlanStateDetail>();
+    public List<PlanType> getTypes() {
+        if (types == null) {
+            types = new ArrayList<PlanType>();
         }
-        return this.stateDetails;
+        return this.types;
     }
 
 }

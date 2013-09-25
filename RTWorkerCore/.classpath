@@ -8,5 +8,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/RTPersistence"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/RTCore"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

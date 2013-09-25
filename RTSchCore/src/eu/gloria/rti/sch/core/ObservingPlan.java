@@ -74,18 +74,35 @@ public class ObservingPlan extends eu.gloria.rti.sch.core.ObservingPlanBase {
 	}
 
 	@Override
-	public long getPredictedExecTime() throws RTSchException {
+	public long getPredictedExecTime(IObservingPlanExecTimePredictor predictor) throws RTSchException {
+		
+		long time = 0;
 		
 		try{
-			ObservingPlanExecTimePredictor predictor = new ObservingPlanExecTimePredictor();
-			long time = predictor.getPredictExecTime(this);
-			LogUtil.info(this, "Prediction: estimation time=" + time);
+			
+			if (root.getMetadata() != null && root.getMetadata().getPredictedExecTime() != null){
+				//The OP contains predicted execution time
+				
+				Double tmpMillisecs = root.getMetadata().getPredictedExecTime() * 1000;
+				time = tmpMillisecs.longValue();
+				LogUtil.info(this, "Prediction: estimation time (inside OP)=" + time);
+				
+			}else{
+				//The OP does not contain predicted execution time
+				
+				if (predictor == null) predictor = new ObservingPlanExecTimePredictor();
+
+				time = predictor.getPredictExecTime(this);
+				LogUtil.info(this, "Prediction: estimation time (by ObservingPlanExecTimePredictor) =" + time);
+				
+			}
+			
 		}catch(Exception ex){
 			LogUtil.info(this, "Prediction: ERROR" + ex.getMessage());
 			System.out.println();
 			ex.printStackTrace();
 		}
-		return 0;
+		return time;
 	}
 
 	@Override
@@ -152,6 +169,7 @@ public class ObservingPlan extends eu.gloria.rti.sch.core.ObservingPlanBase {
 			result.setUuid(root.getMetadata().getUuid());
 			result.setUser(root.getMetadata().getUser());
 			result.setPriority(root.getMetadata().getPriority());
+			result.setDescription(root.getMetadata().getDescription());
 			
 			if (root.getMetadata().getPredictedExecIni() != null){
 				result.setPredictedExecIni(root.getMetadata().getPredictedExecIni().toGregorianCalendar());
@@ -159,6 +177,10 @@ public class ObservingPlan extends eu.gloria.rti.sch.core.ObservingPlanBase {
 			
 			if (root.getMetadata().getPredictedExecEnd() != null){
 				result.setPredictedExecEnd(root.getMetadata().getPredictedExecEnd().toGregorianCalendar());
+			}
+			
+			if (root.getMetadata().getPredictedExecTime() != null){
+				result.setPredictedExecTime(root.getMetadata().getPredictedExecTime());
 			}
 			
 		}

@@ -13,10 +13,12 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;simpleType name="planState">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *     &lt;enumeration value="ADVERTISE"/>
  *     &lt;enumeration value="QUEUED"/>
  *     &lt;enumeration value="RUNNING"/>
  *     &lt;enumeration value="DONE"/>
- *     &lt;enumeration value="CANCEL"/>
+ *     &lt;enumeration value="ABORTED"/>
+ *     &lt;enumeration value="REJECTED"/>
  *     &lt;enumeration value="ERROR"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
@@ -27,10 +29,12 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum PlanState {
 
+    ADVERTISE,
     QUEUED,
     RUNNING,
     DONE,
-    CANCEL,
+    ABORTED,
+    REJECTED,
     ERROR;
 
     public String value() {

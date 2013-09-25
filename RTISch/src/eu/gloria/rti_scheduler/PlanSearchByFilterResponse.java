@@ -1,13 +1,12 @@
 
 package eu.gloria.rti_scheduler;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import eu.gloria.rt.entity.scheduler.PlanInfo;
+import eu.gloria.rt.entity.scheduler.PlanSearchFilterResult;
 
 
 /**
@@ -20,7 +19,7 @@ import eu.gloria.rt.entity.scheduler.PlanInfo;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="out" type="{http://gloria.eu/rt/entity/scheduler}planInfo" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="out" type="{http://gloria.eu/rt/entity/scheduler}planSearchFilterResult"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -36,35 +35,31 @@ import eu.gloria.rt.entity.scheduler.PlanInfo;
 @XmlRootElement(name = "planSearchByFilterResponse")
 public class PlanSearchByFilterResponse {
 
-    protected List<PlanInfo> out;
+    @XmlElement(required = true)
+    protected PlanSearchFilterResult out;
 
     /**
-     * Gets the value of the out property.
+     * Obtiene el valor de la propiedad out.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the out property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getOut().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link PlanInfo }
-     * 
-     * 
+     * @return
+     *     possible object is
+     *     {@link PlanSearchFilterResult }
+     *     
      */
-    public List<PlanInfo> getOut() {
-        if (out == null) {
-            out = new ArrayList<PlanInfo>();
-        }
-        return this.out;
+    public PlanSearchFilterResult getOut() {
+        return out;
+    }
+
+    /**
+     * Define el valor de la propiedad out.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link PlanSearchFilterResult }
+     *     
+     */
+    public void setOut(PlanSearchFilterResult value) {
+        this.out = value;
     }
 
 }

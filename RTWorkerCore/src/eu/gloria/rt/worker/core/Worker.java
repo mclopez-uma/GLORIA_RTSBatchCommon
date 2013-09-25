@@ -4,6 +4,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.util.List;
 
 import eu.gloria.rt.db.task.TaskProperty;
+import eu.gloria.tools.log.LogUtil;
 
 public abstract class Worker {
 	
@@ -110,16 +111,25 @@ public abstract class Worker {
 			} catch (InterruptedException iex) {
 
 				state = WorkerState.STOP;
+				
+				LogUtil.info(this, "Worker. Error running task: " + iex.getMessage());
+				iex.printStackTrace();
 
 			} catch (ClosedByInterruptException ciex) {
 
 				state = WorkerState.STOP;
+				
+				LogUtil.info(this, "Worker. Error running task: " + ciex.getMessage());
+				ciex.printStackTrace();
 
 			} catch (Exception e) {
 				
 				state = WorkerState.STOP;
+				
+				LogUtil.info(this, "Worker. Error running task: " + e.getMessage());
+				e.printStackTrace();
 
-				// LogUtil.info(this, getLogHead() +
+				//LogUtil.info(this, getLogHead() +
 				// "TaskTimeout aborted. Exception thrown Exception....");
 
 			} finally {
@@ -181,5 +191,23 @@ public abstract class Worker {
 			throw new Exception("Error recovering a double property:" + key + ". " + ex.getMessage());
 		}
 	}
+	
+	public long getPropertyLongValue(String key) throws Exception{
+		try{
+			return Long.parseLong(getPropertyStringValue(key));
+		}catch(Exception ex){
+			throw new Exception("Error recovering an long property:" + key + ". " + ex.getMessage());
+		}
+	}
+	
+	public boolean getPropertyBooleanValue(String key) throws Exception{
+		try{
+			return Boolean.parseBoolean(getPropertyStringValue(key));
+		}catch(Exception ex){
+			throw new Exception("Error recovering an boolean property:" + key + ". " + ex.getMessage());
+		}
+	}
+	
+	
 
 }

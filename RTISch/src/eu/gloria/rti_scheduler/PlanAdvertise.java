@@ -42,7 +42,7 @@ public class PlanAdvertise {
 
     @XmlSchemaType(name = "date")
     protected XMLGregorianCalendar deadline;
-	@XmlElement(required = true)
+    @XmlElement(required = true)
     protected List<String> planList;
 
     /**
@@ -57,7 +57,7 @@ public class PlanAdvertise {
         return deadline;
     }
 
-	/**
+    /**
      * Define el valor de la propiedad deadline.
      * 
      * @param value
@@ -69,7 +69,7 @@ public class PlanAdvertise {
         this.deadline = value;
     }
 
-	/**
+    /**
      * Gets the value of the planList property.
      * 
      * <p>

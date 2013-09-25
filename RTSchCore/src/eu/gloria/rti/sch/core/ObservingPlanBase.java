@@ -16,7 +16,7 @@ public abstract class ObservingPlanBase {
 	
 	private Object plan;
 	
-	abstract public long getPredictedExecTime() throws RTException;
+	abstract public long getPredictedExecTime(IObservingPlanExecTimePredictor predictor) throws RTException;
 	
 	abstract public Constraints getConstraints();
 	

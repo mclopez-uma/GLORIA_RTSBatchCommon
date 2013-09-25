@@ -27,10 +27,10 @@ public class TimeFrameIteratorForNightObservationTime extends
 	private Observer observer;
 	private TimeFrame next;
 	private boolean verbose;
-	private int opPerDay;
+	private int sessionMaxOpCount;
+	private long sessionMaxSharedTime;
 
-	public TimeFrameIteratorForNightObservationTime(Observer observer,
-			Date initDate, int days, boolean verbose, int opPerDay) throws RTException {
+	public TimeFrameIteratorForNightObservationTime(Observer observer, Date initDate, int days, boolean verbose, int sessionMaxOpCount, long sessionMaxSharedTime) throws RTException {
 
 		try {
 
@@ -42,7 +42,8 @@ public class TimeFrameIteratorForNightObservationTime extends
 			this.observer = observer;
 			this.next = null;
 			this.verbose = verbose;
-			this.opPerDay = opPerDay;
+			this.sessionMaxOpCount = sessionMaxOpCount;
+			this.sessionMaxSharedTime = sessionMaxSharedTime;
 
 			this.sun = CatalogueTools.getSunRTSInfo(observer, initDate);
 
@@ -147,13 +148,24 @@ public class TimeFrameIteratorForNightObservationTime extends
 			if (verbose) LogUtil.info(this, "NextTimeFrame belongs to the ObservationSession: " + observationSession);
 
 			ObservingPlanManager manager = new ObservingPlanManager();
-			long observingPlanCountForObservationSession = manager.getCountByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
-			if (verbose) LogUtil.info(this, "Observing Plans Count for the ObservationSession: " + observingPlanCountForObservationSession);
-			if (observingPlanCountForObservationSession >= this.opPerDay) {
-				return null;
-			} else {
-				return this.timeFrame;
+			if (sessionMaxSharedTime > 0){
+				
+				long observingPlanSharedTimeForObservationSession = manager.getObservationTimeByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
+				if (verbose) LogUtil.info(this, "Observing Plans Shared Time for the ObservationSession: " + observingPlanSharedTimeForObservationSession);
+				if (observingPlanSharedTimeForObservationSession < sessionMaxSharedTime) {
+					return this.timeFrame;
+				} 
+				
+			}else if (sessionMaxOpCount > 0){
+				
+				long observingPlanCountForObservationSession = manager.getCountByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
+				if (verbose) LogUtil.info(this, "Observing Plans Count for the ObservationSession: " + observingPlanCountForObservationSession);
+				if (observingPlanCountForObservationSession < sessionMaxOpCount) {
+					return this.timeFrame;
+				}
 			}
+			
+			return null;
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -209,5 +221,5 @@ public class TimeFrameIteratorForNightObservationTime extends
 		}
 
 	}
-
+	
 }

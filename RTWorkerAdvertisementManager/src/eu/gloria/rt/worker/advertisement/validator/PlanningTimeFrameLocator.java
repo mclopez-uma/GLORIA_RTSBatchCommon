@@ -15,16 +15,22 @@ public class PlanningTimeFrameLocator implements
 	private boolean nightTime;
 	private Observer observer;
 	private boolean verbose;
-	private int opPerDay;
+	private int sessionMaxOpCount;
+	private long sessionMaxSharedTime;
+	private Date initDate;
 	
-	public PlanningTimeFrameLocator(Observer observer, int days, boolean nightTime, boolean verbose, int opPerDay) throws RTException{
+	public PlanningTimeFrameLocator(Observer observer, Date initDate, int days, boolean nightTime, boolean verbose, int sessionMaxOpCount, long sessionMaxSharedTime) throws RTException{
 		this.days = days;
 		this.nightTime = nightTime;
-		if (!nightTime) throw new RTException("Unsupported SunShine mode.");
+//		if (!nightTime) throw new RTException("Unsupported SunShine mode.");
 		this.observer = observer;
 		this.verbose = verbose;
-		this.opPerDay = opPerDay;
+		this.sessionMaxOpCount = sessionMaxOpCount;
+		this.sessionMaxSharedTime = sessionMaxSharedTime;
+		this.initDate = initDate;
 	}
+	
+	
 
 	@Override
 	public TimeFrameIterator getAvailableTimeFrameIterator(long seconds)
@@ -35,7 +41,11 @@ public class PlanningTimeFrameLocator implements
 			Date endDate = DateTools.increment(initDate, Calendar.DATE, days);
 			return new eu.gloria.rti.sch.impl.time.TimeFrameIterator(initDate, endDate, Calendar.DATE, 1);*/
 			
-			return new TimeFrameIteratorForNightObservationTime(observer, new Date(), days, true, opPerDay);
+			if (nightTime) {
+				return new TimeFrameIteratorForNightObservationTime(observer, this.initDate, days, true, sessionMaxOpCount, sessionMaxSharedTime);
+			} else{
+				return new TimeFrameIteratorForSunshineObservationTime(observer, this.initDate, days, true, sessionMaxOpCount, sessionMaxSharedTime);
+			}
 			
 		}catch(Exception ex){
 			throw new RTException(ex);

@@ -7,8 +7,10 @@ public class Metadata {
 	private String uuid;
 	private String user;
 	private String priority;
+	private String description;
 	private GregorianCalendar predictedExecIni;
 	private GregorianCalendar predictedExecEnd;
+	private double predictedExecTime;
 	
 	public String getUuid() {
 		return uuid;
@@ -39,6 +41,18 @@ public class Metadata {
 	}
 	public void setPredictedExecEnd(GregorianCalendar predictedExecEnd) {
 		this.predictedExecEnd = predictedExecEnd;
+	}
+	public double getPredictedExecTime() {
+		return predictedExecTime;
+	}
+	public void setPredictedExecTime(double predictedExecTime) {
+		this.predictedExecTime = predictedExecTime;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 }

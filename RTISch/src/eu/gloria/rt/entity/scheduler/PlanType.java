@@ -6,34 +6,36 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Clase Java para planOfferState.
+ * <p>Clase Java para planType.
  * 
  * <p>El siguiente fragmento de esquema especifica el contenido que se espera que haya en esta clase.
  * <p>
  * <pre>
- * &lt;simpleType name="planOfferState">
+ * &lt;simpleType name="planType">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="OK"/>
- *     &lt;enumeration value="REJECTED"/>
- *     &lt;enumeration value="TIMEOUT"/>
+ *     &lt;enumeration value="DARK"/>
+ *     &lt;enumeration value="FLAT"/>
+ *     &lt;enumeration value="OBSERVATION"/>
+ *     &lt;enumeration value="BIAS"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "planOfferState")
+@XmlType(name = "planType")
 @XmlEnum
-public enum PlanOfferState {
+public enum PlanType {
 
-    OK,
-    REJECTED,
-    TIMEOUT;
+    DARK,
+    FLAT,
+    OBSERVATION,
+    BIAS;
 
     public String value() {
         return name();
     }
 
-    public static PlanOfferState fromValue(String v) {
+    public static PlanType fromValue(String v) {
         return valueOf(v);
     }
 

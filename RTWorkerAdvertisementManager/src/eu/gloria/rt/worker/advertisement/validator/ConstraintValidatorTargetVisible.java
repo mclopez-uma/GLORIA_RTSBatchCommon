@@ -45,8 +45,10 @@ public class ConstraintValidatorTargetVisible extends ConstraintValidatorBase {
 				Ephemeris eph = context.getEphemeris(constraintTarget.getObjName());
 				if (eph == null){
 					eph = ephemerisCalculator.getEphemeris(constraintTarget.getObjName());
-					context.putEphemeris(constraintTarget.getObjName(), eph);
+					if (eph != null) context.putEphemeris(constraintTarget.getObjName(), eph);
 				}
+				
+				if (eph == null) throw new RTException("Unfound object: " + constraintTarget.getObjName() );
 				
 				data = eph.getObjectInfo(timeFrame.getInit());
 				
@@ -77,9 +79,13 @@ public class ConstraintValidatorTargetVisible extends ConstraintValidatorBase {
 			
 			return (0 < targetAltaz.getAltDecimal());
 			
+		} catch(RTException ex){
+			ex.printStackTrace();
+			throw ex;
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return false;
+			throw new RTException(ex.getMessage());
+			//return false;
 		}
 	}
 	

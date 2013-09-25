@@ -18,12 +18,25 @@ import eu.gloria.tools.log.LogUtil;
  * @author jcabello
  *
  */
-public class ObservingPlanExecTimePredictor {
+public class ObservingPlanExecTimePredictor implements IObservingPlanExecTimePredictor {
 	
 	private long millisecondsMountMove = 10000;
 	private long millisecondsFilterMove = 3000;
 	private long millisecondsLooseness = 5000;
 	private long millisecondsCameraSettings = 500;
+	
+	public ObservingPlanExecTimePredictor(long millisecondsMountMove, long millisecondsFilterMove, long millisecondsLooseness, long millisecondsCameraSettings){
+		
+		this.millisecondsMountMove = millisecondsMountMove;
+		this.millisecondsFilterMove = millisecondsFilterMove;
+		this.millisecondsLooseness = millisecondsLooseness;
+		this.millisecondsCameraSettings = millisecondsCameraSettings;
+		
+	}
+	
+	public ObservingPlanExecTimePredictor(){
+		
+	}
 	
 	public long getPredictExecTime(ObservingPlan op) throws RTSchException {
 		

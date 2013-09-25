@@ -9,50 +9,41 @@
 package eu.gloria.rt.entity.scheduler.plan;
 
 import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for mode.
+ * <p>Java class for planType.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="mode">
+ * &lt;simpleType name="planType">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="batch"/>
- *     &lt;enumeration value="interactive"/>
+ *     &lt;enumeration value="DARK"/>
+ *     &lt;enumeration value="FLAT"/>
+ *     &lt;enumeration value="OBSERVATION"/>
+ *     &lt;enumeration value="BIAS"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "mode")
+@XmlType(name = "planType")
 @XmlEnum
-public enum Mode {
+public enum PlanType {
 
-    @XmlEnumValue("batch")
-    BATCH("batch"),
-    @XmlEnumValue("interactive")
-    INTERACTIVE("interactive");
-    private final String value;
-
-    Mode(String v) {
-        value = v;
-    }
+    DARK,
+    FLAT,
+    OBSERVATION,
+    BIAS;
 
     public String value() {
-        return value;
+        return name();
     }
 
-    public static Mode fromValue(String v) {
-        for (Mode c: Mode.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
+    public static PlanType fromValue(String v) {
+        return valueOf(v);
     }
 
 }
