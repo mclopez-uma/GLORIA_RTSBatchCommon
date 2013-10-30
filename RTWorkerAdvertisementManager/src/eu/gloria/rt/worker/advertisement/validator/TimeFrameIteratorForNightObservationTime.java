@@ -29,8 +29,13 @@ public class TimeFrameIteratorForNightObservationTime extends
 	private boolean verbose;
 	private int sessionMaxOpCount;
 	private long sessionMaxSharedTime;
+	private int sessionMaxOpCountPerUser;
+	private long sessionMaxSharedTimePerUser;
+	private int riseOffsetSecs;
+	private int setOffsetSecs;
+	private String user;
 
-	public TimeFrameIteratorForNightObservationTime(Observer observer, Date initDate, int days, boolean verbose, int sessionMaxOpCount, long sessionMaxSharedTime) throws RTException {
+	public TimeFrameIteratorForNightObservationTime(Observer observer, Date initDate, int days, boolean verbose, int sessionMaxOpCount, long sessionMaxSharedTime, int riseOffsetSecs, int setOffsetSecs, String user, int sessionMaxOpCountPerUser, long sessionMaxSharedTimePerUser) throws RTException {
 
 		try {
 
@@ -44,8 +49,17 @@ public class TimeFrameIteratorForNightObservationTime extends
 			this.verbose = verbose;
 			this.sessionMaxOpCount = sessionMaxOpCount;
 			this.sessionMaxSharedTime = sessionMaxSharedTime;
+			this.riseOffsetSecs = riseOffsetSecs;
+			this.setOffsetSecs = setOffsetSecs;
+			this.user = user;
+			this.sessionMaxOpCountPerUser = sessionMaxOpCountPerUser;
+			this.sessionMaxSharedTimePerUser = sessionMaxSharedTimePerUser;
+			
+			if (verbose) LogUtil.info(this, "constructor. user=" + this.user);
+			if (verbose) LogUtil.info(this, "constructor. sessionMaxOpCountPerUser=" + this.sessionMaxOpCountPerUser);
+			if (verbose) LogUtil.info(this, "constructor. sessionMaxSharedTimePerUser=" + this.sessionMaxSharedTimePerUser);
 
-			this.sun = CatalogueTools.getSunRTSInfo(observer, initDate);
+			this.sun = CatalogueTools.getSunRTSInfo(observer, initDate, riseOffsetSecs, setOffsetSecs);
 
 			if (verbose) LogUtil.info(this, "Constructor: SUN RTS:" + sun.toString());
 
@@ -89,8 +103,7 @@ public class TimeFrameIteratorForNightObservationTime extends
 
 		try {
 
-			this.sun = CatalogueTools.getSunRTSInfo(observer,
-					this.calendar.getTime());
+			this.sun = CatalogueTools.getSunRTSInfo(observer, this.calendar.getTime(), this.riseOffsetSecs, this.setOffsetSecs);
 
 			if (calendar.getTime().compareTo(sun.getRise()) <= 0) { // before raise -> [calendar.time, sun.rise]
 
@@ -129,8 +142,7 @@ public class TimeFrameIteratorForNightObservationTime extends
 
 					// Look for the nextday.sun.rise
 					this.calendar.add(Calendar.DATE, 1);
-					this.sun = CatalogueTools.getSunRTSInfo(observer,
-							this.calendar.getTime());
+					this.sun = CatalogueTools.getSunRTSInfo(observer, this.calendar.getTime(), this.riseOffsetSecs, this.setOffsetSecs);
 					this.timeFrame.setEnd(sun.getRise());
 
 					this.calendar.setTime(sun.getSet());
@@ -150,22 +162,40 @@ public class TimeFrameIteratorForNightObservationTime extends
 			ObservingPlanManager manager = new ObservingPlanManager();
 			if (sessionMaxSharedTime > 0){
 				
-				long observingPlanSharedTimeForObservationSession = manager.getObservationTimeByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
+				long observingPlanSharedTimeForObservationSession = 1 + manager.getObservationTimeByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
 				if (verbose) LogUtil.info(this, "Observing Plans Shared Time for the ObservationSession: " + observingPlanSharedTimeForObservationSession);
-				if (observingPlanSharedTimeForObservationSession < sessionMaxSharedTime) {
-					return this.timeFrame;
-				} 
+				if (observingPlanSharedTimeForObservationSession > sessionMaxSharedTime) {
+					return null;
+				}
 				
 			}else if (sessionMaxOpCount > 0){
 				
-				long observingPlanCountForObservationSession = manager.getCountByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
+				long observingPlanCountForObservationSession = 1 + manager.getCountByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
 				if (verbose) LogUtil.info(this, "Observing Plans Count for the ObservationSession: " + observingPlanCountForObservationSession);
-				if (observingPlanCountForObservationSession < sessionMaxOpCount) {
-					return this.timeFrame;
+				if (observingPlanCountForObservationSession > sessionMaxOpCount) {
+					return null;
 				}
 			}
 			
-			return null;
+			if (sessionMaxSharedTimePerUser > 0 && user != null){
+				
+				long observingPlanSharedTimeForObservationSession = 1 +manager.getObservationTimeByScheduleDate(null, observationSession.getInit(), observationSession.getEnd(), user);
+				if (verbose) LogUtil.info(this, "Observing Plans Shared Time for the user[" + user + "]. ObservationSession: " + observingPlanSharedTimeForObservationSession);
+				if (observingPlanSharedTimeForObservationSession > sessionMaxSharedTimePerUser) {
+					return null;
+				}
+				
+			}else if (sessionMaxOpCountPerUser > 0 && user != null){
+				
+				long observingPlanCountForObservationSession = 1 + manager.getCountByScheduleDate(null, observationSession.getInit(), observationSession.getEnd(), user);
+				if (verbose) LogUtil.info(this, "Observing Plans Count for the user[" + user + "]. ObservationSession: " + observingPlanCountForObservationSession);
+				if (observingPlanCountForObservationSession > sessionMaxOpCountPerUser) {
+					return null;
+				}
+				
+			}
+			
+			return this.timeFrame;
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -181,7 +211,7 @@ public class TimeFrameIteratorForNightObservationTime extends
 
 			TimeFrame result = null;
 
-			RTSInfo sunRTS = CatalogueTools.getSunRTSInfo(observer, date);
+			RTSInfo sunRTS = CatalogueTools.getSunRTSInfo(observer, date, this.riseOffsetSecs, this.setOffsetSecs);
 
 			if (date.compareTo(sunRTS.getSet()) >= 0) { // after sun set ->
 														// good time
@@ -194,7 +224,7 @@ public class TimeFrameIteratorForNightObservationTime extends
 				// END
 				date = DateTools.trunk(date, "yyyyMMdd");
 				Date tomorrow = DateTools.increment(date, Calendar.DATE, 1);
-				sunRTS = CatalogueTools.getSunRTSInfo(observer, tomorrow);
+				sunRTS = CatalogueTools.getSunRTSInfo(observer, tomorrow, this.riseOffsetSecs, this.setOffsetSecs);
 				result.setEnd(sunRTS.getRise());
 
 			} else if (date.compareTo(sunRTS.getRise()) <= 0) { // before
@@ -207,7 +237,7 @@ public class TimeFrameIteratorForNightObservationTime extends
 				// INIT
 				date = DateTools.trunk(date, "yyyyMMdd");
 				Date yesterday = DateTools.increment(date, Calendar.DATE, -1);
-				sunRTS = CatalogueTools.getSunRTSInfo(observer, yesterday);
+				sunRTS = CatalogueTools.getSunRTSInfo(observer, yesterday, this.riseOffsetSecs, this.setOffsetSecs);
 				result.setInit(sunRTS.getSet());
 
 				// END

@@ -26,8 +26,13 @@ public class TimeFrameIteratorForSunshineObservationTime extends eu.gloria.rti.s
 	private boolean verbose;
 	private int sessionMaxOpCount;
 	private long sessionMaxSharedTime;
+	private int riseOffsetSecs;
+	private int setOffsetSecs;
+	private String user;
+	private int sessionMaxOpCountPerUser;
+	private long sessionMaxSharedTimePerUser;
 
-	public TimeFrameIteratorForSunshineObservationTime(Observer observer, Date initDate, int days, boolean verbose, int sessionMaxOpCount, long sessionMaxSharedTime) throws RTException {
+	public TimeFrameIteratorForSunshineObservationTime(Observer observer, Date initDate, int days, boolean verbose, int sessionMaxOpCount, long sessionMaxSharedTime, int riseOffsetSecs, int setOffsetSecs, String user, int sessionMaxOpCountPerUser, long sessionMaxSharedTimePerUser) throws RTException {
 
 		try {
 
@@ -41,15 +46,20 @@ public class TimeFrameIteratorForSunshineObservationTime extends eu.gloria.rti.s
 			this.verbose = verbose;
 			this.sessionMaxOpCount = sessionMaxOpCount;
 			this.sessionMaxSharedTime = sessionMaxSharedTime;
+			this.riseOffsetSecs = riseOffsetSecs;
+			this.setOffsetSecs = setOffsetSecs;
+			this.user = user;
+			this.sessionMaxOpCountPerUser = sessionMaxOpCountPerUser;
+			this.sessionMaxSharedTimePerUser = sessionMaxSharedTimePerUser;
 
-			this.sun = CatalogueTools.getSunRTSInfo(observer, initDate);
+			this.sun = CatalogueTools.getSunRTSInfo(observer, initDate, riseOffsetSecs, setOffsetSecs);
 
 			if (verbose) LogUtil.info(this, "Constructor: SUN RTS:" + sun.toString());
 
 			if (initDate.compareTo(this.sun.getSet()) >= 0) { // today after set -> wrong time, put sunrise of next day
 				this.calendar.setTime(initDate);
 				this.calendar.add(Calendar.DATE, 1);
-				this.sun = CatalogueTools.getSunRTSInfo(observer, this.calendar.getTime());
+				this.sun = CatalogueTools.getSunRTSInfo(observer, this.calendar.getTime(), riseOffsetSecs, setOffsetSecs);
 				this.calendar.setTime(this.sun.getRise());
 			} else if (initDate.compareTo(this.sun.getRise()) >= 0) { // after rise -> good time
 				this.calendar.setTime(this.initDate); 
@@ -69,14 +79,14 @@ public class TimeFrameIteratorForSunshineObservationTime extends eu.gloria.rti.s
 			
 			daysProvided++;
 			
-			this.sun = CatalogueTools.getSunRTSInfo(observer, this.calendar.getTime());
+			this.sun = CatalogueTools.getSunRTSInfo(observer, this.calendar.getTime(), riseOffsetSecs, setOffsetSecs);
 			RTSInfo currentRTSInfo = this.sun;
 			
 			this.timeFrame.setInit(calendar.getTime());
 			this.timeFrame.setEnd(sun.getSet());
 			
 			this.calendar.add(Calendar.DATE, 1);
-			this.sun = CatalogueTools.getSunRTSInfo(observer, this.calendar.getTime());
+			this.sun = CatalogueTools.getSunRTSInfo(observer, this.calendar.getTime(), riseOffsetSecs, setOffsetSecs);
 
 			this.calendar.setTime(sun.getRise());
 			
@@ -92,22 +102,39 @@ public class TimeFrameIteratorForSunshineObservationTime extends eu.gloria.rti.s
 			ObservingPlanManager manager = new ObservingPlanManager();
 			if (sessionMaxSharedTime > 0){
 				
-				long observingPlanSharedTimeForObservationSession = manager.getObservationTimeByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
+				long observingPlanSharedTimeForObservationSession = 1 + manager.getObservationTimeByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
 				if (verbose) LogUtil.info(this, "Observing Plans Shared Time for the ObservationSession: " + observingPlanSharedTimeForObservationSession + " [" + observationSession.getInit() + "->" +  observationSession.getEnd() + "]");
-				if (observingPlanSharedTimeForObservationSession < sessionMaxSharedTime) {
-					return this.timeFrame;
-				} 
+				if (observingPlanSharedTimeForObservationSession > sessionMaxSharedTime) {
+					return null;
+				}
 				
 			}else if (sessionMaxOpCount > 0){
 				
-				long observingPlanCountForObservationSession = manager.getCountByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
+				long observingPlanCountForObservationSession = 1 + manager.getCountByScheduleDate(null, observationSession.getInit(), observationSession.getEnd());
 				if (verbose) LogUtil.info(this, "Observing Plans Count for the ObservationSession: " + observingPlanCountForObservationSession + " [" + observationSession.getInit() + "->" +  observationSession.getEnd() + "]");
-				if (observingPlanCountForObservationSession < sessionMaxOpCount) {
-					return this.timeFrame;
+				if (observingPlanCountForObservationSession > sessionMaxOpCount) {
+					return null;
 				}
 			}
 			
-			return null;
+			if (sessionMaxSharedTimePerUser > 0){
+				
+				long observingPlanSharedTimeForObservationSession = 1 + manager.getObservationTimeByScheduleDate(null, observationSession.getInit(), observationSession.getEnd(), user);
+				if (verbose) LogUtil.info(this, "Observing Plans Shared Time for the user[" + user + "]. ObservationSession: " + observingPlanSharedTimeForObservationSession + " [" + observationSession.getInit() + "->" +  observationSession.getEnd() + "]");
+				if (observingPlanSharedTimeForObservationSession > sessionMaxSharedTimePerUser) {
+					return null;
+				}
+				
+			}else if (sessionMaxOpCountPerUser > 0){
+				
+				long observingPlanCountForObservationSession = 1 + manager.getCountByScheduleDate(null, observationSession.getInit(), observationSession.getEnd(), user);
+				if (verbose) LogUtil.info(this, "Observing Plans Count for the user[" + user + "]. ObservationSession: " + observingPlanCountForObservationSession + " [" + observationSession.getInit() + "->" +  observationSession.getEnd() + "]");
+				if (observingPlanCountForObservationSession > sessionMaxOpCountPerUser) {
+					return null;
+				}
+			}
+			
+			return this.timeFrame;
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -121,7 +148,7 @@ public class TimeFrameIteratorForSunshineObservationTime extends eu.gloria.rti.s
 
 		try {
 			
-			RTSInfo sunRTS = CatalogueTools.getSunRTSInfo(observer, date);
+			RTSInfo sunRTS = CatalogueTools.getSunRTSInfo(observer, date, riseOffsetSecs, setOffsetSecs);
 
 			TimeFrame result = new TimeFrame();
 			

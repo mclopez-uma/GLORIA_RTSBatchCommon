@@ -39,6 +39,8 @@ public class WorkerAdvertisementManager  extends Worker  {
 		int days = getPropertyIntValue("days_ahead");
 		int sessionMaxOpCount = getPropertyIntValue("session_max_op_count");
 		long sessionMaxSharedTime = getPropertyLongValue("session_max_shared_time");
+		int sessionMaxOpCountPerUser = getPropertyIntValue("session_max_op_count_per_user");
+		long sessionMaxSharedTimePerUser = getPropertyLongValue("session_max_shared_time_per_user");
 		
 		Observer observer = new Observer();
 		observer.setLatitude(getPropertyDoubleValue("obs_latitude"));
@@ -52,6 +54,10 @@ public class WorkerAdvertisementManager  extends Worker  {
 		boolean nightTime = getPropertyBooleanValue("observation_night_time");
 		
 		String timeUserRequestsDeadline = getPropertyStringValue("time_user_requests_deadline");
+		String timeExecDeadline = getPropertyStringValue("time_exec_deadline");
+		
+		int sunRiseOffsetSecs = getPropertyIntValue("sun_rise_offset_secs");
+		int sunSetOffsetSecs = getPropertyIntValue("sun_set_offset_secs");
 		
 		boolean logs = true;
 		eu.gloria.rt.db.scheduler.ObservingPlan op = null;
@@ -121,7 +127,7 @@ public class WorkerAdvertisementManager  extends Worker  {
 					if (logs) LogUtil.info(this, "Scheduler::Advertise. daysAheadOverPlanning=" + daysAheadOverPlanning);
 					if (logs) LogUtil.info(this, "Scheduler::Advertise. daysAheadOverAstronomialPlanning=" + daysAheadOverAstronomialPlanning);
 					
-					PlanningTimeFrameLocator planningTimeFrameLocator = new PlanningTimeFrameLocator(observer, schedulingStartDate, daysAheadOverPlanning, nightTime /*night time*/, true /*verbose*/, sessionMaxOpCount, sessionMaxSharedTime);
+					PlanningTimeFrameLocator planningTimeFrameLocator = new PlanningTimeFrameLocator(observer, schedulingStartDate, daysAheadOverPlanning, nightTime /*night time*/, true /*verbose*/, sessionMaxOpCount, sessionMaxSharedTime, sunRiseOffsetSecs, sunSetOffsetSecs, op.getUser(), sessionMaxOpCountPerUser, sessionMaxSharedTimePerUser);
 					AstronomicalTimeFrameLocator astronomicalTimeFrameLocator = new AstronomicalTimeFrameLocator(observer, daysAheadOverAstronomialPlanning, true);
 					
 					Constraints constraints = plan.getConstraints();
@@ -154,7 +160,6 @@ public class WorkerAdvertisementManager  extends Worker  {
 						op.setOfferDeadline(DateTools.increment(now, Calendar.HOUR, 1)); //OfferDeadLine after 1 hour
 						op.setScheduleDateIni(timeFrame.getInit());
 						op.setScheduleDateEnd(timeFrame.getEnd());
-						op.setExecDeadline(timeFrame.getEnd());
 						op.setPredAstr(astronomyTimeFrame.getInit());
 						op.setState(ObservingPlanState.ADVERT_ACCEPTED);
 						op.setAdvertDateEnd(new Date());
@@ -164,6 +169,14 @@ public class WorkerAdvertisementManager  extends Worker  {
 						op.setPriority(Integer.parseInt(plan.getMetadata().getPriority()));
 						op.setUser(plan.getMetadata().getUser());
 						op.setUuid(plan.getMetadata().getUuid());
+						
+						if (timeExecDeadline != null){
+							Date deadline = DateTools.getDate(DateTools.getDate(timeFrame.getEnd(), "yyyy-MM-dd") + " " + timeExecDeadline, "yyyy-MM-dd HH:mm:ss");
+							if (logs) LogUtil.info(this, "Scheduler::Advertise.ACCEPTED. execDeadLine:" + deadline);
+							op.setExecDeadline(deadline);
+						}else{
+							op.setExecDeadline(timeFrame.getEnd());
+						}
 						
 						
 						//TODO: Communicate to GLORIA -> actually save into table ObservingPlan

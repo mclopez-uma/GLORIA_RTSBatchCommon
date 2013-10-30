@@ -18,8 +18,13 @@ public class PlanningTimeFrameLocator implements
 	private int sessionMaxOpCount;
 	private long sessionMaxSharedTime;
 	private Date initDate;
+	private int riseOffsetSecs;
+	private int setOffsetSecs;
+	private int sessionMaxOpCountPerUser;
+	private long sessionMaxSharedTimePerUser;
+	private String user;
 	
-	public PlanningTimeFrameLocator(Observer observer, Date initDate, int days, boolean nightTime, boolean verbose, int sessionMaxOpCount, long sessionMaxSharedTime) throws RTException{
+	public PlanningTimeFrameLocator(Observer observer, Date initDate, int days, boolean nightTime, boolean verbose, int sessionMaxOpCount, long sessionMaxSharedTime, int riseOffsetSecs, int setOffsetSecs, String user, int sessionMaxOpCountPerUser, long sessionMaxSharedTimePerUser) throws RTException{
 		this.days = days;
 		this.nightTime = nightTime;
 //		if (!nightTime) throw new RTException("Unsupported SunShine mode.");
@@ -28,6 +33,11 @@ public class PlanningTimeFrameLocator implements
 		this.sessionMaxOpCount = sessionMaxOpCount;
 		this.sessionMaxSharedTime = sessionMaxSharedTime;
 		this.initDate = initDate;
+		this.riseOffsetSecs = riseOffsetSecs;
+		this.setOffsetSecs = setOffsetSecs;
+		this.user = user;
+		this.sessionMaxOpCountPerUser = sessionMaxOpCountPerUser;
+		this.sessionMaxSharedTimePerUser = sessionMaxSharedTimePerUser;
 	}
 	
 	
@@ -42,9 +52,9 @@ public class PlanningTimeFrameLocator implements
 			return new eu.gloria.rti.sch.impl.time.TimeFrameIterator(initDate, endDate, Calendar.DATE, 1);*/
 			
 			if (nightTime) {
-				return new TimeFrameIteratorForNightObservationTime(observer, this.initDate, days, true, sessionMaxOpCount, sessionMaxSharedTime);
+				return new TimeFrameIteratorForNightObservationTime(observer, this.initDate, days, true, this.sessionMaxOpCount, this.sessionMaxSharedTime, this.riseOffsetSecs, this.setOffsetSecs, this.user, this.sessionMaxOpCountPerUser, this.sessionMaxSharedTimePerUser);
 			} else{
-				return new TimeFrameIteratorForSunshineObservationTime(observer, this.initDate, days, true, sessionMaxOpCount, sessionMaxSharedTime);
+				return new TimeFrameIteratorForSunshineObservationTime(observer, this.initDate, days, true, this.sessionMaxOpCount, this.sessionMaxSharedTime, this.riseOffsetSecs, this.setOffsetSecs, this.user, this.sessionMaxOpCountPerUser, this.sessionMaxSharedTimePerUser);
 			}
 			
 		}catch(Exception ex){

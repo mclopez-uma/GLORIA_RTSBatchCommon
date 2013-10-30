@@ -4,6 +4,6 @@ import eu.gloria.rt.exception.RTSchException;
 
 public interface OffshoreRetriever {
 	
-	public void retrieve(String uuiOp) throws RTSchException;
+	public void retrieve(long idOp) throws RTSchException;
 
 }

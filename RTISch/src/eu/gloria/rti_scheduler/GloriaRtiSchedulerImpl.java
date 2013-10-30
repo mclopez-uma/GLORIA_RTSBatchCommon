@@ -24,6 +24,8 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 
+import org.apache.cxf.binding.corba.wsdl.Array;
+
 import eu.gloria.rt.db.scheduler.AdvertisementState;
 import eu.gloria.rt.db.scheduler.ObservingPlanManager;
 import eu.gloria.rt.db.scheduler.ObservingPlanState;
@@ -62,8 +64,11 @@ public class GloriaRtiSchedulerImpl implements GloriaRtiScheduler {
 
     private static final Logger LOG = Logger.getLogger(GloriaRtiSchedulerImpl.class.getName());
     
-	private String xsdFile = "/usr/share/gloria/rts/repositories/tmp/cfg/gloria_rti_plan.xsd";
-	private String advBasePath = "/usr/share/gloria/rts/repositories/tmp/advertisement/";
+	private String xsdFile =     "/usr/share/gloria/rts/worker/advertisement/config/gloria_rti_plan.xsd";
+	private String advBasePath = "/usr/share/gloria/rts/worker/advertisement/xml/";
+	
+	//private String xsdFile =     "/usr/share/gloria/rts/repositories/tmp/cfg/gloria_rti_plan.xsd";
+	//private String advBasePath = "/usr/share/gloria/rts/repositories/tmp/advertisement/";
 
 
     /* (non-Javadoc)
@@ -196,6 +201,7 @@ public class GloriaRtiSchedulerImpl implements GloriaRtiScheduler {
 					execEndDateEnd, 
 					observationSessionDate);
 			
+			
 			//LIMITATION!!!! No more than 50 items per page
 			if (pagination.getPageSize() > 50){
 				pagination.setPageSize(50);
@@ -232,6 +238,7 @@ public class GloriaRtiSchedulerImpl implements GloriaRtiScheduler {
 					execEndDateIni, 
 					execEndDateEnd, 
 					observationSessionDate);
+			
 			
 			for (int x = 0; x < opList.size(); x++) {
 
@@ -332,6 +339,13 @@ public class GloriaRtiSchedulerImpl implements GloriaRtiScheduler {
 						break;
 					}
 					
+					if (op.getScheduleDateIni() != null){
+						pi.setScheduleDateIni(DateTools.getXmlGregorianCalendar(op.getScheduleDateIni()));
+					}
+					
+					if (op.getScheduleDateEnd() != null){
+						pi.setScheduleDateEnd(DateTools.getXmlGregorianCalendar(op.getScheduleDateEnd()));
+					}
 					
 					
 					if (op.getState() == ObservingPlanState.DONE){
@@ -488,7 +502,13 @@ public class GloriaRtiSchedulerImpl implements GloriaRtiScheduler {
 								break;
 							}
 							
+							if (op.getScheduleDateIni() != null){
+								pi.setScheduleDateIni(DateTools.getXmlGregorianCalendar(op.getScheduleDateIni()));
+							}
 							
+							if (op.getScheduleDateEnd() != null){
+								pi.setScheduleDateEnd(DateTools.getXmlGregorianCalendar(op.getScheduleDateEnd()));
+							}
 							
 							if (op.getState() == ObservingPlanState.DONE){
 								pi.setExecDateIni(DateTools.getXmlGregorianCalendar(op.getExecDateIni()));
