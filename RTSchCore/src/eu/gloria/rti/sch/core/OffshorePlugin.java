@@ -50,4 +50,11 @@ public abstract class OffshorePlugin {
 		return Integer.parseInt(result);
 	}
 	
+	public boolean getPropertyValueBoolean(String key){
+		String result  = null;
+		TaskProperty prop =  getProperty(key);
+		if (prop != null) result = prop.getValue();
+		return Boolean.parseBoolean(result);
+	}
+	
 }

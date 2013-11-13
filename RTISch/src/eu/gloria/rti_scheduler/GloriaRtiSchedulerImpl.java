@@ -42,6 +42,7 @@ import eu.gloria.rt.entity.scheduler.PlanStateDetail;
 import eu.gloria.rt.entity.scheduler.PlanStateInfo;
 import eu.gloria.rt.entity.scheduler.PlanType;
 import eu.gloria.rti.sch.core.ObservingPlan;
+import eu.gloria.tools.configuration.Config;
 import eu.gloria.tools.file.FileUtil;
 import eu.gloria.tools.time.DateTools;
 
@@ -64,8 +65,8 @@ public class GloriaRtiSchedulerImpl implements GloriaRtiScheduler {
 
     private static final Logger LOG = Logger.getLogger(GloriaRtiSchedulerImpl.class.getName());
     
-	private String xsdFile =     "/usr/share/gloria/rts/worker/advertisement/config/gloria_rti_plan.xsd";
-	private String advBasePath = "/usr/share/gloria/rts/worker/advertisement/xml/";
+	private String xsdFile =     Config.getProperty("rti_sch", "opXsdFile");
+	private String advBasePath =  Config.getProperty("rti_sch", "opsXmlFolder");
 	
 	//private String xsdFile =     "/usr/share/gloria/rts/repositories/tmp/cfg/gloria_rti_plan.xsd";
 	//private String advBasePath = "/usr/share/gloria/rts/repositories/tmp/advertisement/";

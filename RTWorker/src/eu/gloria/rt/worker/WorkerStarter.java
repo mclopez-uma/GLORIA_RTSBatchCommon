@@ -7,6 +7,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 
 import eu.gloria.rt.db.task.TaskManager;
+import eu.gloria.rt.db.task.TaskProperty;
 import eu.gloria.rt.db.util.DBUtil;
 import eu.gloria.rt.worker.core.Worker;
 import eu.gloria.tools.log.LogUtil;
@@ -76,6 +77,10 @@ public class WorkerStarter {
 			
 			Worker task = (Worker) ct.newInstance();
 			task.init(taskIn.getId(), taskIn.getSleepTime(), taskIn.getTaskProperties());
+			
+			for (TaskProperty prop : task.getProperties()) {
+				LogUtil.info(this, "WorkerStarter. Creating task:---->ConfigurationParam[key=" + prop.getName() +", value=" + prop.getValue() + "]");
+			}
 			
 			LogUtil.info(this, "WorkerStarter. Created task: " + taskIn.getProvider());
 			

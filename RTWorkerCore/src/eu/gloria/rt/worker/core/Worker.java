@@ -99,13 +99,22 @@ public abstract class Worker {
 		public void run() {
 
 			try {
+				
+				if (sleepTime > 0){
 
-				while (true) {
+					while (true) {
 
-					// Executes the custom action....
+						// Executes the custom action....
+						doAction();
+
+						Thread.sleep(sleepTime);
+					}
+					
+				}else{
+					
+					// Executes the custom action....only once
 					doAction();
-
-					Thread.sleep(sleepTime);
+					
 				}
 
 			} catch (InterruptedException iex) {
@@ -176,11 +185,33 @@ public abstract class Worker {
 		return result;
 	}
 	
+	public String getPropertyStringValue(String key, String defaultValue){
+		String result  = getPropertyStringValue(key);
+		if (result == null) {
+			result = defaultValue;
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the default value=" + result);
+		}else{
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the found value=" + result);
+		}
+		return result;
+	}
+	
 	public int getPropertyIntValue(String key) throws Exception{
 		try{
 			return Integer.parseInt(getPropertyStringValue(key));
 		}catch(Exception ex){
 			throw new Exception("Error recovering an integer property:" + key + ". " + ex.getMessage());
+		}
+	}
+	
+	public int getPropertyIntValue(String key, int defaultValue) {
+		try{
+			int result =  Integer.parseInt(getPropertyStringValue(key));
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the found value=" + result);
+			return result;
+		}catch(Exception ex){
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the default value=" + defaultValue);
+			return defaultValue;
 		}
 	}
 	
@@ -192,6 +223,17 @@ public abstract class Worker {
 		}
 	}
 	
+	public double getPropertyDoubleValue(String key, double defaultValue) {
+		try{
+			double result =  Double.parseDouble(getPropertyStringValue(key));
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the found value=" + result);
+			return result;
+		}catch(Exception ex){
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the default value=" + defaultValue);
+			return defaultValue;
+		}
+	}
+	
 	public long getPropertyLongValue(String key) throws Exception{
 		try{
 			return Long.parseLong(getPropertyStringValue(key));
@@ -200,11 +242,33 @@ public abstract class Worker {
 		}
 	}
 	
+	public long getPropertyLongValue(String key, long defaultValue) {
+		try{
+			long result =  Long.parseLong(getPropertyStringValue(key));
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the found value=" + result);
+			return result;
+		}catch(Exception ex){
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the default value=" + defaultValue);
+			return defaultValue;
+		}
+	}
+	
 	public boolean getPropertyBooleanValue(String key) throws Exception{
 		try{
 			return Boolean.parseBoolean(getPropertyStringValue(key));
 		}catch(Exception ex){
 			throw new Exception("Error recovering an boolean property:" + key + ". " + ex.getMessage());
+		}
+	}
+	
+	public boolean getPropertyBooleanValue(String key, boolean defaultValue) {
+		try{
+			boolean result = Boolean.parseBoolean(getPropertyStringValue(key));
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the found value=" + result);
+			return result;
+		}catch(Exception ex){
+			LogUtil.info(this, "Worker[ID=" + id + "]. Param[key=" + key + "]. Returning the default value=" + defaultValue);
+			return defaultValue;
 		}
 	}
 	

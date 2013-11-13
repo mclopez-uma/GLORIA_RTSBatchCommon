@@ -14,5 +14,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/RTWorkerOffshore"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/RTCore"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/RTTools"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/RTWorkerScheduler"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
