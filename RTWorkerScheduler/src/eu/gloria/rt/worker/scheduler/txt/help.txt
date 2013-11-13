@@ -1,0 +1,248 @@
+ ----------  Help in English ----------
+
+
+
+ ----------  Ayuda en Castellano ----------
+ [EJECUCIÓN DEL EJECUTOR]
+
+    java -jar executor.jar      >   Ejecuta el ejecutor en modo consola (sin parámetos).
+
+    java -jar executor.jar -w   >   Ejecuta el ejecutor en modo ventana (con el parámetro -w).
+
+    ATENCIÓN: Esta ayuda aparecerá si al ejecutar introduce parámetros incorrectos o repetidos.
+
+
+ [ARCHIVOS QUE USA EL EJECUTOR]
+
+    gloria_rti_plan.xsd         >   Es el archivo usado para la validación de los planes de observación.
+                                    Si no existe se crea automáticamente en el mismo directorio de ejecutión.
+
+    executor.log.properties     >   Es el archivo utilizado para la definición de los mensajes del log.
+                                    Si no existe se crea automáticamente en el mismo directorio de ejecutión.
+
+    executor.log                >   Es el archivo que almacena los mensajes del log, configurado a través del archivo 'executor.log.properties'.
+                                    Si no existe se crea automáticamente en el mismo directorio de ejecutión.
+
+    executor.properties         >   Es el archivo para configurar la ejecución del ejecutor.
+                                    Si no existe, NO se crea, se utiliza una configuración por defecto (que probablemente no sea óptima para su telescopio).
+                                    Puede crear este archivo (en el mismo directorio donde esta el archivo 'executor.jar') y configurarlo usando el siguiente apartado de esta ayuda.
+
+
+ [PARÁMETROS DEL ARCHIVO DE CONFIGURACIÓN DEL EJECUTOR]
+
+    DatabaseIp          Es la dirección IP donde se encuentra el servidor de base de datos (actualmente MySQL).
+                        El valor por defecto es 127.0.0.1, es decir, el propio equipo.
+            Ejemplos:                       DatabaseIp=192.168.0.25
+                                            DatabaseIp=245.18.212.245
+
+    DatabasePort        Es el puerto TCP donde responderá el servidor de base de datos (actualmente MySQL).
+                        El valor por defecto es 3306, es decir, el puerto por defecto de MySQL.
+            Ejemplos:                       DatabasePort=15025
+                                            DatabasePort=2451
+
+    DatabaseDb          Es la base de datos dentro del servidor de MySQL.
+                        El valor por defecto es gloria.
+            Ejemplos:                       DatabaseDb=gloria
+                                            DatabaseDb=rti_sch
+
+    DatabaseUser        Es el usuario con el que se conectará a la base de datos.
+                        Este usuario debe tener permisos para hacer INSERT, UPDATE, DELETE y SELECT en las tablas de la base de datos.
+                        El valor por defecto es gloria. No se recomienda usar el usuario "root", es un error de seguridad muy grande.
+            Ejemplos:                       DatabaseUser=pedro
+                                            DatabaseUser=scheduler
+
+    DatabasePass        Es la contraseña del usuario con el que se conectará a la base de datos.
+                        El valor por defecto es vacío, es decir, sin contraseña. No se recomienda usar el valor por defecto.
+                        Se recomienda que la contraseña tenga: minúsculas, mayúsculas, números y signos y además tenga una longitud mínima de 8 caracteres.
+            Ejemplos:                       DatabasePass=******
+                                            DatabasePass=*******
+
+    Latitude            Indica la latitud de la posición del telescopio dentro de la tierra.
+                        La unidad utilizada es grados, es un valor decimal.
+                        El valor por defecto es 0. Se recomienda usar la coma como separador entre enteros y decimales.
+                        Este valor es muy importante, una mala configuración de este parámetro provocará un uso ineficiente del telescopio.
+            Ejemplos:       Málaga:         Latitude=36,7154
+                            Madrid:         Latitude=40,44889
+                            Tenerife:       Latitude=28,298566
+
+    Longitude           Indica la longitud de la posición del telescopio dentro de la tierra.
+                        La unidad utilizada es grados, es un valor decimal.
+                        El valor por defecto es 0. Se recomienda usar la coma como separador entre enteros y decimales.
+                        Este valor es muy importante, una mala configuración de este parámetro provocará un uso ineficiente del telescopio.
+            Ejemplos:       Málaga:         Longitude=-4,4907
+                            Madrid:         Longitude=-3,71928
+                            Tenerife:       Longitude=-16,509490
+
+    Altitude            Indica la altitud de la posición del telescopio sobre el nivel del mar.
+                        La unidad utilizada es metros, como valor entero. El valor por defecto es 0.
+                        Este valor es muy importante, una mala configuración de este parámetro provocará un uso ineficiente del telescopio.
+            Ejemplos:       Málaga:         Altitude=0
+                            Madrid:         Altitude=639
+                            Tenerife:       Altitude=2390
+
+    XmlPath             Indica el directorio donde se almacenan los archivos .XML de los planes de observación.
+                        El valor por defecto es el directorio xml dentro del directorio de ejecución, es decir,  './xml/'.
+                        Debe incluir obligatoriamente el último separador de directorio.
+                        Si el directorio no existe, se crea.
+            Ejemplos:                       XmlPath=/gloria/xml/
+                                            XmlPath=/home/gloria_user/xml/
+
+    XsdFile             Indica la ruta completa (directorio y nombre de archivo) del archivo .XSD para validar los archivos .XML de los planes de observación.
+                        El valor por defecto es './gloria_rti_plan.xsd' dentro del directorio de ejecución.
+                        Si el directorio no existe, se crea.
+            Ejemplos:                       XsdFile=/gloria/xml/gloria_rti_plan.xsd
+                                            XsdFile=/home/gloria_user/gloria_rti_plan.xsd
+
+    RtiIP               Es la dirección IP donde se encuentra el interfaz del telescopio robótico (RTI).
+                        El valor por defecto es el mismo equipo donde se está lanzado el ejecutor.
+            Ejemplos:       El RTI está en el mismo equipo:         RtiIP=127.0.0.1
+                            El RTI esta en la dirección 1.2.3.4:    RtiIP=1.2.3.4
+
+    RtiPort             Es el puerto TCP que utiliza el RTI para comunicarse.
+                        El valor por defecto es 8080. No olvide abrir este puerto en el firewall del equipo que contiene el RTI.
+            Ejemplos:                                               RtiPort=8080
+                                                                    RtiPort=80
+
+    RtiPath             Es la ruta de directorios para acceder al RTI dentro del servidor, sin incluir: protocolo, dirección, puerto y archivo.
+                        El valor por defecto es 'RTI'.
+            Ejemplos:                                               RtiPath=RTI
+                                                                    RtiPath=mi_telescopio
+
+    RtiUser             Es el usuario habilitado para acceder al RTI. El valor por defecto es 'gloria_user'.
+            Ejemplos:                                               RtiUser=gloria_user
+                                                                    RtiUser=pedro
+
+    RtiPass             Es la contraseña del usuario habilitado para acceder al RTI. El valor por defecto es vacío.
+            Ejemplos:                                               RtiPass=1234
+                                                                    RtiPass=*******
+
+    RtiHttps            Es un valor booleano (true o false) para expresar si se usa protocolo HTTPS (si es true) o el protocolo HTTP (si es false).
+                        El valor por defecto es 'false', es decir, usar HTTP.
+            Ejemplos:       HTTPS habilitado:                       RtiHttps=true
+                            HTTPS deshabilitado:                    RtiHttps=false
+
+    RtiCertificate      Es el archivo del certificado digital en caso de que utilice HTTPS, si usa HTTP este valor no se tendrá en cuenta.
+                        El valor por defecto es vacío.
+            Ejemplos:                           RtiCertificate=/home/gloria/cacerts_gloria_ca_dev
+                                                RtiCertificate=/gloria/certificado_gloria
+
+    deviceNameCameraPreferred       Es el nombre de la camara que se usará de forma predefinida.
+                                    Si este valor no está definido se utilizará la primera de las camaras que haya en la lista de camaras disponibles.
+            Ejemplos:                           deviceNameCameraPreferred=C0
+                                                deviceNameCameraPreferred=digital
+
+    MinAltExecution     Es la mínima altitud que debe tener un objetivo para ser observado por el telescopio.
+                        El valor por defecto de este campo es 0. Se debe expresar en grados decimales, se recomienda utilizar la coma como separador de decimales.
+            Ejemplos:       Los objetos deben estar a al menos 7,5º:    MinAltExecution=7,5
+                            Los objetos deben estar a al menos 5º:      MinAltExecution=5
+
+    RaError             Representa el margen de error que tendrá un objetivo para ser observado por el telescopio, en la coordenada de ascensión recta.
+                        El valor por defecto de este campo es 10. Se debe expresar en grados decimales, se recomienda utilizar la coma como separador de decimales.
+            Ejemplos:       Con un error de 3º:         RaError=3
+                            Con un error de 7,5º:       RaError=7,5
+
+    DecError            Representa el margen de error que tendrá un objetivo para ser observado por el telescopio, en la coordenada de declinación.
+                        El valor por defecto de este campo es 10. Se debe expresar en grados decimales, se recomienda utilizar la coma como separador de decimales.
+            Ejemplos:       Con un error de 3º:         DecError=3
+                            Con un error de 7,5º:       DecError=7,5
+
+    ImgReadyByState     Es un valor booleano (true o false), el valor por defecto es true. 
+                        Si el valor es true, el ejecutor comprueba cada 50 ms el estado de la camara para saber si ha terminado de realizar la imagen.
+                        Si el valor es false, el ejecutor no comprueba el estado de la camara y espera un tiempo mayor para solicitar la imagen. 
+                        Ponga este campo a 'false' si la camara de su RTI no implementa correctamente los estados.
+                        Si su telescopio implementa correctamente los estados, poner este campo a 'true' reducirá la velocidad de ejecución.
+            Ejemplos:       Utiliza estados:            ImgReadyByState=true
+                            Utiliza tiempos:            ImgReadyByState=false
+
+    MoveMountByState    Es un valor booleano (true o false), el valor por defecto es true. 
+                        Si el valor es true, el ejecutor comprueba cada cierto tiempo la posición de la montura para saber si ha terminado de moverse al objetivo.
+                        Si el valor es false, el ejecutor no comprueba el estado de la montura y espera un tiempo mayor comprobar el movimiento. 
+                        Ponga este campo a 'false' si la camara de su RTI no implementa correctamente los estados.
+                        Si su telescopio implementa correctamente los estados, poner este campo a 'true' reducirá la velocidad de ejecución.
+            Ejemplos:       Utiliza estados:            MoveMountByState=true
+                            Utiliza tiempos:            MoveMountByState=false
+
+    TimeoutImgReady     Es un tiempo entero en milisegundos, cuyo valor por defecto es 20000 milisegundos (20 segundos). 
+                        Este valor es el tiempo que esperará el ejecutor para que la imagen este lista.
+            Ejemplos:       Esperar 30 segundos:        TimeoutImgReady=30000
+                            Esperar 1 minutos:          TimeoutImgReady=60000
+
+    TimeoutMoveMount    Es un tiempo entero en milisegundos, cuyo valor por defecto es 60000 milisegundos (1 minuto). 
+                        Este valor es el tiempo que esperará el ejecutor para que la montura este en posición.
+            Ejemplos:       Esperar 30 segundos:        TimeoutMoveMount=30000
+                            Esperar 1 minutos:          TimeoutMoveMount=60000
+
+    TimeWaitSelector    Es un tiempo entero en milisegundos, cuyo valor por defecto es 10000 milisegundos (10 segundos). 
+                        Si no hay planes de observación, este es el tiempo que se espera para buscar nuevos planes de observación.
+            Ejemplos:                           TimeWaitSelector=3500
+                                                TimeWaitSelector=15000
+
+    TimeCheck           Es un tiempo entero en milisegundos, cuyo valor por defecto es 1000 milisegundos (1 segundo). 
+                        Es el tiempo de espera para comprobar la finalización de los planes de observación.
+            Ejemplos:                           TimeCheck=2500
+                                                TimeCheck=5000
+
+    TimeoutTurnRti      Es un tiempo entero en milisegundos, cuyo valor por defecto es 30000 milisegundos (30 segundos). 
+                        Tiempo máximo de espera para que el ejecutor conecte con el RTI.
+            Ejemplos:                           TimeoutTurnRti=15000
+                                                TimeoutTurnRti=60000
+
+    TimeToBack          Es un tiempo decimal expresado en horas, cuyo valor por defecto es 12 horas. 
+                        Cuando el ejecutor busque planes para ejecutar, usará este valor para localizarlos.
+                        Es decir, buscará los planes anteriores a este tiempo para ejecutarlos.
+            Ejemplos:                           TimeToBack=3
+                                                TimeToBack=6
+
+
+ [BASE DE DATOS]
+    Para hacer uso del ejecutor, se necesita una base de datos, actualmente sólo se ha implementado el uso de MySQL a través de JPA (lo que la hace muy escalable).
+
+    Se recomienda crear un usuario nuevo (no use root) con una base de datos en la que tenga permisos para hacer INSERT, UPDATE, DELETE y SELECT
+
+    Dentro de la base de datos necesita crear la tabla: ObservingPlan, para ello puede utilizar el siguiente script SQL:
+        CREATE TABLE `ObservingPlan` (
+          `id` bigint(20) NOT NULL auto_increment COMMENT 'DB identifier',
+          `uuid` VARCHAR(255)  NOT NULL  COMMENT 'Observing plan UUID',
+          `user` VARCHAR(255)  NOT NULL COMMENT 'Observing plan user',
+          `priority` INT  NOT NULL  COMMENT 'Priority',
+          `state` INT  NOT NULL  COMMENT 'OP State',
+          `type` INT  NOT NULL  COMMENT 'Type of OP: DARK (0), FLAT (1), OBSERVATION (2) or BIAS (3)',
+          `file` varchar(255) NOT NULL COMMENT 'Observing Plan xml file name',
+          `description` VARCHAR(1024) COMMENT 'Observing Plan description' ,
+          `comment` VARCHAR(1024) COMMENT 'Any interesting comment about the observing plan' ,
+          `receivedDate` TIMESTAMP NULL DEFAULT NULL COMMENT 'Date when the OP was received',
+          `advertDeadline` TIMESTAMP NULL DEFAULT NULL  COMMENT 'Advertisement deadline',
+          `advertDateIni` TIMESTAMP NULL DEFAULT NULL COMMENT 'Beginning of the advertisement evaluation process',
+          `advertDateEnd` TIMESTAMP NULL DEFAULT NULL COMMENT 'Ending of the advertisement evaluation process',
+          `offeredDate` TIMESTAMP NULL DEFAULT NULL COMMENT 'Date when the OP was offered ',
+          `scheduleDateIni` TIMESTAMP NULL DEFAULT NULL COMMENT 'Beginning of the scheduled date interval',
+          `scheduleDateEnd` TIMESTAMP NULL DEFAULT NULL COMMENT 'Ending of the scheduled date interval',
+          `execDateIni` TIMESTAMP NULL DEFAULT NULL COMMENT 'Beginning of the observing plan execution',
+          `execDateEnd` TIMESTAMP NULL DEFAULT NULL  COMMENT 'Endind of the observing plan execution',
+          `execDuration` INT DEFAULT 0 COMMENT 'Execution Duration',
+          `execDateObservationSession` TIMESTAMP NULL DEFAULT NULL COMMENT 'Observation session execution 00:00:00 or 12:00:00',
+          `execDeadline` TIMESTAMP NULL DEFAULT NULL  COMMENT 'OP execution deadline. Used by the images retriever',
+          `offerDeadline` TIMESTAMP NULL DEFAULT NULL  COMMENT 'Deadline for the offering process.',
+          `predAstr` TIMESTAMP NULL DEFAULT NULL COMMENT 'Astronomical prediction',
+          `predDuration` INT DEFAULT 0 COMMENT 'Predicted Duration',
+          `eventAdvertReplyDeadline` TIMESTAMP NULL DEFAULT NULL COMMENT 'Event Advertisement Reply DeadLine',
+          `eventAdvertReplyDate` TIMESTAMP NULL DEFAULT NULL COMMENT 'Event Advertisement Reply Date',
+          `eventAdvertReplyAccepted` INT  NOT NULL COMMENT 'Event Advertisement Reply Accepted flag',
+          `eventOfferConfirmDate` TIMESTAMP NULL DEFAULT NULL COMMENT 'Event Offer Confirmation Date',
+          `eventOfferConfirmAccepted` INT  NOT NULL COMMENT 'Event Offer Confirmation flag',
+          `eventOffshoreReqDate` TIMESTAMP NULL DEFAULT NULL COMMENT 'Event Offshore Request Date',
+          `eventFinishEventDate` TIMESTAMP NULL DEFAULT NULL COMMENT 'Event Finish Event Date',
+          PRIMARY KEY  (`id`),
+          UNIQUE(`uuid`)
+        );
+
+
+ [ACERCA DE]
+    Este ejecutor ha sido creado por Alfredo Cueto Jiménez (alfredo.acj@gmail.com) desde diciembre de 2012 hasta octubre de 2013,
+    como proyecto fin de carrera de Ingeniería Informática en la Universidad de Málaga.
+
+    No hubiera sido posible sin la ayuda y los consejos de los directores:
+        Don Carlos J. Pérez del Pulgar    (cperez@isa.uma.es)
+        Don Juan Cabello Castillo    (jcabello@uma.es)
+
+
