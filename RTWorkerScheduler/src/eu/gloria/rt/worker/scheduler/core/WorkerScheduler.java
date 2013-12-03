@@ -78,7 +78,7 @@ public class WorkerScheduler extends eu.gloria.rt.worker.core.Worker {
 			
 			// Create and start the generator slots
 			GeneratorSlots genSlots = new GeneratorSlots(this.context, database);
-			genSlots.checkSlots();	
+			genSlots.checkSlots();
 			
 			// Search one OP to scheduler
 			ObservingPlan op = database.getNextOpToProcess();

@@ -21,6 +21,7 @@ import javax.persistence.Query;
 import eu.gloria.rt.db.scheduler.ObservingPlan;
 import eu.gloria.rt.db.scheduler.ObservingPlanState;
 import eu.gloria.rt.db.scheduler.SchTimeFrame;
+import eu.gloria.rt.db.util.DBUtil;
 import eu.gloria.rt.worker.scheduler.context.SchedulerContext;
 import eu.gloria.rt.worker.scheduler.context.SchedulerLog;
 import eu.gloria.rt.worker.scheduler.interfaces.ConfigUpgradeable;
@@ -33,7 +34,7 @@ import eu.gloria.rt.worker.scheduler.iterator.TimeFrame;
  *         Class to implements a data base interface and connect with MySQL data base server.
  */
 public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeable {
-	private EntityManagerFactory factory;
+//	private EntityManagerFactory factory;
 	private SchedulerContext schContext;
 	private int daysScheduling;
 	private SchedulerLog log;
@@ -57,7 +58,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			prop.put("hibernate.connection.password",     sc.getDatabasePass());
 			factory = Persistence.createEntityManagerFactory("RTPersistence", prop);*/
 			
-			factory = Persistence.createEntityManagerFactory("RTPersistence");
+//			factory = Persistence.createEntityManagerFactory("RTPersistence");
 			
 	
 			schContext.addConfigUpgradeable(this);
@@ -76,9 +77,11 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 
 	@Override
 	public ObservingPlan getNextOpToProcess() {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Get_next_op_to_process"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -95,7 +98,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			// Make the query, put the parameters and set the result size
 			ObservingPlanState stateParam = ObservingPlanState.ADVERT_QUEUED;
 			Timestamp nowParam = new Timestamp(System.currentTimeMillis());
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("state", stateParam);
 			query.setParameter("now", nowParam);
 			query.setMaxResults(1);
@@ -108,25 +111,32 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			@SuppressWarnings("unchecked")
 			List<ObservingPlan> list = (List<ObservingPlan>) query.getResultList();
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Results"), list.size()));
+			
+			DBUtil.commit(em);
+			
 			if (list.size() == 0) {
 				return null;
 			} else {
 				return list.get(0);
 			}
+			
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 		return null;
 	}
 
 	@Override
 	public void resetAllOpsRunningToQueued() {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Reset_all_ops_running_to_queued"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -138,13 +148,10 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			String sql = sb.toString();
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
-			// It is a UPDATE query, create a entity transaction
-			EntityTransaction entityTrans = entityMngr.getTransaction();
-			entityTrans.begin();
 			// Make the query with them parameters
 			ObservingPlanState newStateParam = ObservingPlanState.ADVERT_QUEUED;
 			ObservingPlanState oldStateParam = ObservingPlanState.ADVERT_RUNNING;
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("newState", newStateParam);
 			query.setParameter("oldState", oldStateParam);
 
@@ -154,20 +161,26 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 
 			// Execute the query and do commit to the data base
 			query.executeUpdate();
-			entityTrans.commit();
+			
+			
+			 DBUtil.commit(em);
+			 
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			 DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			 DBUtil.close(em);
 		}
 	}
 
 	@Override
 	public void rejectOpsPassedAdvertDeadLine() {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Modify_op_in_dead_line"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -188,7 +201,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			ObservingPlanState oldStateParam = ObservingPlanState.ADVERT_QUEUED;
 
 			// Make the query
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("newState", newStateParam);
 			query.setParameter("now", nowParam);
 			query.setParameter("comment", commentParam);
@@ -201,25 +214,27 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "oldState", oldStateParam));
 
 			// Execute the UPDATE query, with commit after that
-			EntityTransaction entityTrans = entityMngr.getTransaction();
-			entityTrans.begin();
 			int num = query.executeUpdate();
-			entityTrans.commit();
+			
+			DBUtil.commit(em);
 
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Ops_in_dead_line"), num));
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			 DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 	}
 
 	@Override
 	public void setOpScheduling(BigInteger id) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(String.format(schContext.language.getString("MsStDbMysql_Set_op_scheduling"), id));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -237,7 +252,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			Timestamp nowParam = new Timestamp(System.currentTimeMillis());
 
 			// Make the query
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("state", stateParam);
 			query.setParameter("now", nowParam);
 			query.setParameter("id", id.longValue());
@@ -248,23 +263,26 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "id", id));
 
 			// Execute the UPDATE query, with commit after that
-			EntityTransaction entityTrans = entityMngr.getTransaction();
-			entityTrans.begin();
 			query.executeUpdate();
-			entityTrans.commit();
+			
+			DBUtil.commit(em);
+			
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 	}
 
 	@Override
 	public void setOpScheduled(BigInteger id, Map<String, Object> modifies) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em =  DBUtil.getEntityManager();
 		try {
 			log.info(String.format(schContext.language.getString("MsStDbMysql_Op_scheduled"), id));
+			
+			 DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -283,10 +301,8 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// It is a UPDATE query, create a entity transaction
-			EntityTransaction entityTrans = entityMngr.getTransaction();
-			entityTrans.begin();
 			// Make the query with them parameters y los mostramos por el log
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			for (Map.Entry<String, Object> entry : modifies.entrySet()) {
 				String key = entry.getKey();
 				Object value = entry.getValue();
@@ -304,22 +320,27 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 
 			// Execute the query and do commit to the data base
 			query.executeUpdate();
-			entityTrans.commit();
+			
+			DBUtil.commit(em);
+			
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Saved_op_scheduled"), id));
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 	}
 
 	@Override
 	public void setUuidOp(String uuidOp, Timestamp iniOp, Timestamp endOp) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		final int MARGIN = 0; // FIXME 2.5 seconds
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Set_uuid_op"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Truncate the timestamps to 0 milliseconds
 			iniOp = truncateTimestamp(iniOp);
@@ -336,7 +357,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			String sql = sb.toString();
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("dateIni", iniOp);
 			query.setParameter("dateEnd", endOp);
 			query.setMaxResults(1);
@@ -386,9 +407,10 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 				// Show the SQL in the log
 				sql = sb.toString();
 				log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
+//System.out.println("TEST::deleting TimeFrame:" + stf.getDateIni() + " <-> " + stf.getDateEnd() );
 
 				// Make the query with them parameters
-				query = entityMngr.createQuery(sql);
+				query = em.createQuery(sql);
 				query.setParameter("dateIni", stf.getDateIni());
 				query.setParameter("dateEnd", stf.getDateEnd());
 
@@ -396,35 +418,42 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 				log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "dateIni", stf.getDateIni()));
 				log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "dateEnd", stf.getDateEnd()));
 
-				EntityTransaction entityTrans = entityMngr.getTransaction();
-				entityTrans.begin();
 				// Execute the query
 				query.executeUpdate();
-				entityTrans.commit();
 				
 				// Save the new slots
 				for (int i=0 ; i<resSTF.length ; i++) {
 					if (resSTF[i] != null) {
-						saveTimeFrameInDb(resSTF[i].getDateIni(), resSTF[i].getDateEnd(), resSTF[i].getUuid());
+//System.out.println("TEST::adding TimeFrame:" + resSTF[i].getDateIni() + " <-> " + resSTF[i].getDateEnd() + "-->OPUUID=" + resSTF[i].getUuid());
+						saveTimeFrameInDb(resSTF[i].getDateIni(), resSTF[i].getDateEnd(), resSTF[i].getUuid(), em); 
 					}
 				}
 			}
+			
+			DBUtil.commit(em);
+			
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			
+			DBUtil.rollback(em);
+			 
 			for (StackTraceElement ste : e.getStackTrace()) {
 				log.fatal(ste.toString());
 			}
 			
 		} finally {
-			entityMngr.close();
+			
+			 DBUtil.close(em);
 		}
 	}
 	
 	public void setUuidOp(String uuidOp, Timestamp iniOp, Timestamp endOp, boolean ant) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Set_uuid_op"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Truncate the timestamps to 0 milliseconds
 			iniOp = truncateTimestamp(iniOp);
@@ -443,7 +472,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("dateIni", iniOp);
 			query.setParameter("dateEnd", endOp);
 			query.setMaxResults(1);
@@ -476,7 +505,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 				// Insert the parameters
 				Timestamp dateIniParam = stfBusy.getDateIni();
 				Timestamp dateEndParam = stfBusy.getDateEnd();
-				query = entityMngr.createQuery(sql);
+				query = em.createQuery(sql);
 				query.setParameter("iniOp", iniOp);
 				query.setParameter("endOp", endOp);
 				query.setParameter("uuidOp", uuidOp);
@@ -490,10 +519,6 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 				log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "dateIni", dateIniParam));
 				log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "dateEnd", dateEndParam));
 
-				// Create the entity transaction
-				EntityTransaction entityTrans = entityMngr.getTransaction();
-				entityTrans.begin();
-
 				// Has a free time before the OP?
 				if (dateIniParam.getTime() != iniOp.getTime()) {
 					// ...make this free time
@@ -502,7 +527,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 					stfFree1.setDateEnd(iniOp);
 					stfFree1.setUuidOp(null);
 
-					entityMngr.persist(stfFree1);
+					em.persist(stfFree1);
 				}
 
 				// Has a free time after the OP?
@@ -513,26 +538,31 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 					stfFree2.setDateEnd(dateEndParam);
 					stfFree2.setUuidOp(null);
 
-					entityMngr.persist(stfFree2);
+					em.persist(stfFree2);
 				}
 
 				// execute
 				query.executeUpdate();
-				entityTrans.commit();
+				
+				DBUtil.commit(em);
 			}
+			
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 	}
 
 	@Override
 	public void setOpError(BigInteger id, String comment) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Set_error_op"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -545,12 +575,9 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			String sql = sb.toString();
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
-			// It is a UPDATE query, create a entity transaction
-			EntityTransaction entityTrans = entityMngr.getTransaction();
-			entityTrans.begin();
 			// Make the query with them parameters
 			ObservingPlanState newStateParam = ObservingPlanState.ADVERT_ERROR;
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("newState", newStateParam);
 			query.setParameter("comment", comment);
 			query.setParameter("id", id.longValue());
@@ -562,20 +589,24 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 
 			// Execute the query and do commit to the data base
 			query.executeUpdate();
-			entityTrans.commit();
+			
+			DBUtil.commit(em);
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 	}
 
 	@Override
 	public SchTimeFrame getMaxSlotSchTimeFrame() {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em =  DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Get_max_sch_time_frame"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -588,28 +619,37 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setMaxResults(1);
 
 			// Execute the query
 			@SuppressWarnings("unchecked")
 			List<SchTimeFrame> list = (List<SchTimeFrame>) query.getResultList();
+			
+			DBUtil.commit(em);
+			
 			return list.size() >= 1 ? list.get(0) : null;
+			
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 		return null;
 	}
 
 	@Override
 	public void deleteOldsSlots() {
-		EntityManager entityMngr = factory.createEntityManager();
+		
+		EntityManager em = DBUtil.getEntityManager();
+		
 		Timestamp nowParam = new Timestamp(System.currentTimeMillis());
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Delete_previous_sch_time_frame"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -621,23 +661,26 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("now", nowParam);
 
 			// Show the parameters in the log
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "now", nowParam));
 
-			EntityTransaction entityTrans = entityMngr.getTransaction();
-			entityTrans.begin();
 			// Execute the query
 			query.executeUpdate();
-			entityTrans.commit();
+			
+			DBUtil.commit(em);
 
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			
+			 DBUtil.rollback(em);
+			 
 		} finally {
-			entityMngr.close();
+			
+			DBUtil.close(em);
 		}
 	}
 
@@ -659,7 +702,50 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 	 *            Final time in the SchTimeFrame.
 	 */
 	private void saveTimeFrameInDb(Timestamp ini, Timestamp end, String uuidOp) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
+		try {
+			
+			DBUtil.beginTransaction(em);
+			
+			// Truncate the timestamps to 0 milliseconds
+			ini = truncateTimestamp(ini);
+			end = truncateTimestamp(end);
+
+			// Show the parameters in the log
+			log.info(String.format(schContext.language.getString("MsStDbMysql_Save_time_frame"), ini, end, uuidOp));
+			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "dateIni", ini));
+			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "dateEnd", end));
+
+			// I create the object and set the data
+			SchTimeFrame sft = new SchTimeFrame();
+			sft.setDateIni(ini);
+			sft.setDateEnd(end);
+			sft.setUuidOp(uuidOp);
+
+			// Save object in the persistence and send the commit
+			em.persist(sft);
+			
+			DBUtil.commit(em);
+			
+		} catch (Exception e) {
+			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
+			e.printStackTrace();
+			DBUtil.rollback(em);
+		} finally {
+			DBUtil.close(em);
+		}
+	}
+	
+	/**
+	 * This method save in the database a new SchTimeFrame.
+	 * 
+	 * @param ini
+	 *            Initial time in the SchTimeFrame.
+	 * @param end
+	 *            Final time in the SchTimeFrame.
+	 * @throws Exception 
+	 */
+	private void saveTimeFrameInDb(Timestamp ini, Timestamp end, String uuidOp, EntityManager em) throws Exception {
 		try {
 			// Truncate the timestamps to 0 milliseconds
 			ini = truncateTimestamp(ini);
@@ -670,10 +756,6 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "dateIni", ini));
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_param"), "dateEnd", end));
 
-			// I create the object to save in data base
-			EntityTransaction entityTrans = entityMngr.getTransaction();
-			entityTrans.begin();
-
 			// I create the object and set the data
 			SchTimeFrame sft = new SchTimeFrame();
 			sft.setDateIni(ini);
@@ -681,21 +763,22 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			sft.setUuidOp(uuidOp);
 
 			// Save object in the persistence and send the commit
-			entityMngr.persist(sft);
-			entityTrans.commit();
+			em.persist(sft);
+			
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
-		} finally {
-			entityMngr.close();
-		}
+			throw e;
+		} 
 	}
 
 	@Override
 	public int getNumOpScheduledUser(Date date, String user) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(String.format(schContext.language.getString("MsStDbMysql_Get_num_op_scheduled_by_user"), user));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the initial and end time of the day
 			GregorianCalendar gc = new GregorianCalendar();
@@ -721,7 +804,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("ini", iniParam);
 			query.setParameter("end", endParam);
 			query.setParameter("user", user);
@@ -734,20 +817,26 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			// Execute the query
 			@SuppressWarnings("unchecked")
 			List<ObservingPlan> lst = (List<ObservingPlan>) query.getResultList();
+			
+			DBUtil.commit(em);
+			
 			return lst.size();
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 		return 0;
 	}
 
 	public long getTimeScheduledUser(Date date, String user) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Get_time_op_scheduled"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the initial and end time of the day
 			GregorianCalendar gc = new GregorianCalendar();
@@ -773,7 +862,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("ini", iniParam);
 			query.setParameter("end", endParam);
 			query.setParameter("user", user);
@@ -788,6 +877,9 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			@SuppressWarnings("unchecked")
 			List<Long> list = (List<Long>) query.getResultList();
 			Long result = list.get(0);
+			
+			DBUtil.commit(em);
+			
 			if (list.size() == 0 || result == null) {
 				return 0;
 			} else {
@@ -796,17 +888,20 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 		return 0;
 	}
 
 	@Override
 	public int getNumOpScheduled(Date date) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Get_num_op_scheduled"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the initial and end time of the day
 			GregorianCalendar gc = new GregorianCalendar();
@@ -831,7 +926,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("ini", iniParam);
 			query.setParameter("end", endParam);
 
@@ -842,21 +937,27 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			// Execute the query
 			@SuppressWarnings("unchecked")
 			List<ObservingPlan> lst = (List<ObservingPlan>) query.getResultList();
+			
+			DBUtil.commit(em);
+			
 			return lst.size();
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 		return 0;
 	}
 
 	@Override
 	public long getTimeScheduled(Date date) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Get_time_op_scheduled"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the initial and end time of the day
 			GregorianCalendar gc = new GregorianCalendar();
@@ -881,7 +982,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("ini", iniParam);
 			query.setParameter("end", endParam);
 			query.setMaxResults(1);
@@ -894,6 +995,9 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			@SuppressWarnings("unchecked")
 			List<Long> list = (List<Long>) query.getResultList();
 			Long result = list.get(0);
+			
+			DBUtil.commit(em);
+			
 			if (list.size() == 0 || result == null) {
 				return 0;
 			} else {
@@ -902,17 +1006,20 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			 DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 		return 0;
 	}
 
 	@Override
 	public List<SchTimeFrame> getSlotsWithPriority(Timestamp init, int priority) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(String.format(schContext.language.getString("MsStDbMysql_Get_slots_with_priority"), priority));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the initial and end time of the day
 			GregorianCalendar gc = new GregorianCalendar();
@@ -938,7 +1045,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			query.setParameter("init", init);
 			query.setParameter("max", maxDayParam);
 
@@ -965,7 +1072,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			query = entityMngr.createQuery(sql);
+			query = em.createQuery(sql);
 			query.setParameter("init", init);
 			query.setParameter("priority", priority);
 			query.setParameter("max", maxDayParam);
@@ -986,13 +1093,16 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 					lst1.add(stf);
 				}
 			}
+			
+			 DBUtil.commit(em);
 
 			return lst1;
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 		return new LinkedList<SchTimeFrame>();
 	}
@@ -1050,9 +1160,11 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 
 	@Override
 	public List<SchTimeFrame> searchSchTimeFramesCrasheds(long ini, long end) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Looking_for_sch_time_frames_crasheds"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -1065,7 +1177,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 
 			// Execute the query
 			@SuppressWarnings("unchecked")
@@ -1078,21 +1190,27 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 					lst.add(stf);
 				}
 			}
+			
+			DBUtil.commit(em);
+			
 			return lst;
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 		return new LinkedList<SchTimeFrame>();
 	}
 
 	@Override
 	public void resetOps(List<SchTimeFrame> stfs) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Resets_ops"));
+			
+			DBUtil.beginTransaction(em);
 
 			for (SchTimeFrame stf : stfs) {
 				// Make the SQL
@@ -1109,14 +1227,12 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 				log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 				// It is a UPDATE query, create a entity transaction
-				EntityTransaction entityTrans = entityMngr.getTransaction();
-				entityTrans.begin();
 
 				// Make the query with them parameters
 				ObservingPlanState newStateParam = ObservingPlanState.ADVERT_QUEUED;
 				String commentParam = schContext.language.getString("MsStDbMysql_Op_re_scheduling_for_priority");
 				String idParam = stf.getUuid();
-				Query query = entityMngr.createQuery(sql);
+				Query query = em.createQuery(sql);
 				query.setParameter("newState", newStateParam);
 				query.setParameter("comment", commentParam);
 				query.setParameter("uuid", idParam);
@@ -1128,21 +1244,25 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 
 				// Execute the query and do commit to the data base
 				query.executeUpdate();
-				entityTrans.commit();
+
+				DBUtil.commit(em);
 			}
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 	}
 
 	@Override
 	public void resetSchTimeFrames(List<SchTimeFrame> stfs) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Resets_sch_time_frames"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -1159,8 +1279,8 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			String sql = sb.toString();
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), "SELECT stf" + sql));
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), "DELETE" + sql));
-			Query querySelect = entityMngr.createQuery("SELECT stf" + sql);
-			Query queryDelete = entityMngr.createQuery("DELETE" + sql);
+			Query querySelect = em.createQuery("SELECT stf" + sql);
+			Query queryDelete = em.createQuery("DELETE" + sql);
 
 			for (int i = 0; i < stfs.size(); i++) {
 				SchTimeFrame stf = stfs.get(i);
@@ -1191,31 +1311,34 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			List<SchTimeFrame> resultado = (List<SchTimeFrame>) querySelect.getResultList();
 
 			// Delete with a DELETE query
-			EntityTransaction entityTrans = entityMngr.getTransaction();
-			entityTrans.begin();
 			queryDelete.executeUpdate();
-			entityTrans.commit();
-
+			
 			// Merge the selected STFs
 			List<SchTimeFrame> stfMerged = mergeSchTimeFrames(resultado);
 
 			// And save in the data base
 			for (SchTimeFrame stf : stfMerged) {
-				saveTimeFrameInDb(stf.getDateIni(), stf.getDateEnd(), stf.getUuid());
+				saveTimeFrameInDb(stf.getDateIni(), stf.getDateEnd(), stf.getUuid(), em);
 			}
+			
+			DBUtil.commit(em);
+			 
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 	}
 
 	@Override
 	public void updateOpCanceledByGloria() {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Update_op_canceled_by_gloria"));
+			
+			DBUtil.beginTransaction(em);
 
 			// First: seek its
 			// Make the SQL
@@ -1230,7 +1353,7 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			Timestamp nowParam = new Timestamp(System.currentTimeMillis());
 			ObservingPlanState abotedStateParam = ObservingPlanState.ABORTED;
 			query.setParameter("now", nowParam);
@@ -1259,11 +1382,8 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 				sql = sb.toString();
 				log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
-				// It is a UPDATE query, create a entity transaction
-				EntityTransaction entityTrans = entityMngr.getTransaction();
-				entityTrans.begin();
 				// Make the query with them parameters
-				query = entityMngr.createQuery(sql);
+				query = em.createQuery(sql);
 				query.setParameter("now", nowParam);
 				query.setParameter("abotedState", abotedStateParam);
 
@@ -1273,22 +1393,28 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 
 				// Execute the query and do commit to the data base
 				query.executeUpdate();
-				entityTrans.commit();
+				
 			}
+			
+			DBUtil.commit(em);
+			
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 	}
 
 	@Override
 	@Deprecated
 	public void rejectForOverbooking(ObservingPlan op) {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
 			log.info(schContext.language.getString("MsStDbMysql_Reject_for_overbooking"));
+			
+			DBUtil.beginTransaction(em);
 
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
@@ -1300,12 +1426,9 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			String sql = sb.toString();
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
-			// It is a UPDATE query, create a entity transaction
-			EntityTransaction entityTrans = entityMngr.getTransaction();
-			entityTrans.begin();
 			// Make the query with them parameters
 			ObservingPlanState stateParam = ObservingPlanState.ADVERT_REJECTED;
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 			String idParam = String.valueOf(op.getId());
 			query.setParameter("newState", stateParam);
 			query.setParameter("id", idParam);
@@ -1316,19 +1439,25 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 
 			// Execute the query and do commit to the data base
 			query.executeUpdate();
-			entityTrans.commit();
+			
+			DBUtil.commit(em);
+			
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 	}
 
 	@Override
 	public List<SchTimeFrame> getSlotsFree() {
-		EntityManager entityMngr = factory.createEntityManager();
+		EntityManager em = DBUtil.getEntityManager();
 		try {
+			
+			DBUtil.beginTransaction(em);
+			
 			// Make the SQL
 			StringBuffer sb = new StringBuffer();
 			sb.append("SELECT stf ");
@@ -1341,18 +1470,21 @@ public class MassiveStorageDbMysql implements DataBaseInterface, ConfigUpgradeab
 			log.debug(String.format(schContext.language.getString("MsStDbMysql_Sql_to_executing"), sql));
 
 			// Make the query with them parameters
-			Query query = entityMngr.createQuery(sql);
+			Query query = em.createQuery(sql);
 
 			// Execute the query
 			@SuppressWarnings("unchecked")
 			List<SchTimeFrame> lst1 = (List<SchTimeFrame>) query.getResultList();
+			
+			DBUtil.commit(em);
 
 			return lst1;
 		} catch (Exception e) {
 			log.fatal(String.format(schContext.language.getString("MsStDbMysql_Error_executing_sql"), e.getMessage()));
 			e.printStackTrace();
+			DBUtil.rollback(em);
 		} finally {
-			entityMngr.close();
+			DBUtil.close(em);
 		}
 		return new LinkedList<SchTimeFrame>();
 	}
